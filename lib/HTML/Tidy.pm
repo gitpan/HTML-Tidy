@@ -12,13 +12,13 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.00
+Version 1.01
 
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.30 2004/02/26 04:25:14 andy Exp $
+    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.33 2004/02/29 17:41:29 andy Exp $
 
 =cut
 
-our $VERSION = "1.00";
+our $VERSION = "1.01_01";
 
 =head1 SYNOPSIS
 
@@ -173,7 +173,7 @@ sub parse {
     my $errorblock = _calltidy( $html );
     return unless defined $errorblock;
 
-    my @lines = split( /\n/, $errorblock );
+    my @lines = split( /\012/, $errorblock );
     for my $line ( @lines ) {
         chomp $line;
 
@@ -250,53 +250,6 @@ who don't want the C<Test::> framework from pulling it in, and all its
 prerequisite modules.
 
 =back
-
-=head1 Building libtidy
-
-The tidy folks don't distribute a libtidy distribution.  You'll have to
-check out the CVS tree and build it from there.  Here are the steps.
-
-Login in to the anonymous CVS server at SourceForge:
-
-    $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/tidy login
-    (Logging in to anonymous@cvs.sf.net)
-    CVS password: [hit ENTER]
-
-Check out the source tree:
-
-    $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/tidy co tidy
-    cvs server: Updating tidy
-    cvs server: Updating tidy/CVSROOT
-    U tidy/CVSROOT/checkoutlist
-    U tidy/CVSROOT/commitinfo
-    ... many many files come out ...
-
-If you're on Mac OS X, you'll need to tell the Makefile that you use
-ranlib:
-
-    $ export set RANLIB=ranlib
-
-Change to the directory with the F<Makefile> in it, and run F<make>.
-This example uses the GNU make F<Makefile>.
-
-    $ cd tidy/build/gmake/
-
-    $ make
-    if [ ! -d ./obj ]; then mkdir ./obj; fi
-    gcc -o obj/access.o ...
-    ... etc etc etc ...
-
-Install the libs, headers and the F<tidy> executable:
-
-    $ sudo make install
-
-If you're on Mac OS X, you'll have to run F<ranlib> again on the
-installed lib:
-
-    $ sudo ranlib /usr/local/lib/libtidy.a
-
-Once these steps are complete, you'll be able to go back to HTML::Tidy
-and build it normally.
 
 =head1 Bugs & Feedback
 

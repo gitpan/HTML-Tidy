@@ -2,8 +2,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#include "ppport.h"
-
 #include <tidy.h>
 #include <buffio.h>
 #include <stdio.h>

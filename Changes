@@ -1,5 +1,16 @@
 Revision history for Perl extension HTML::Tidy.
 
+1.01_01 Sun Feb 29 11:39:07 CST 2004
+        [FIXES]
+        * Message parsing is split on a Ctrl-J instead of \n now.
+          This should fix the test problems on Win32.
+
+        * Removed the #include "ppport.h" from Tidy.xs so it can compile
+          on Win32.
+
+        [MISCELLANEOUS]
+        * Moved the install directions for tidylib into the README.
+
 1.00    Wed Feb 25 22:19:28 CST 2004
 
         First real version, released on an unsuspecting world.
