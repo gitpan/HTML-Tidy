@@ -12,11 +12,11 @@ isa_ok( $tidy, 'HTML::Tidy' );
 
 $tidy->parse_file( "-", $html );
 
-my @errors = $tidy->errors;
-is( scalar @errors, 5 );
+my @messages = $tidy->messages;
+is( scalar @messages, 5 );
 
-$tidy->clear_errors;
-is( scalar $tidy->errors, 0, "Cleared the errors" );
+$tidy->clear_messages;
+is( scalar $tidy->messages, 0, "Cleared the messages" );
 
 __DATA__
 <html>

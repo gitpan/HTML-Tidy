@@ -7,7 +7,8 @@ README
 Tidy.xs
 bin/webtidy
 lib/HTML/Tidy.pm
-lib/HTML/Tidy/Error.pm
+lib/HTML/Tidy/Message.pm
 lib/Test/HTML/Tidy.pm
 t/00.load.t
+t/message.t
 t/simple.t

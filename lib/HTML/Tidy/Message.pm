@@ -1,11 +1,11 @@
-# $Id: Error.pm,v 1.4 2004/02/18 05:51:47 andy Exp $
-package HTML::Tidy::Error;
+# $Id: Message.pm,v 1.3 2004/02/21 05:56:56 andy Exp $
+package HTML::Tidy::Message;
 
 use strict;
 
 =head1 NAME
 
-HTML::Tidy::Error - Error object for the Tidy functionality
+HTML::Tidy::Message - Message object for the Tidy functionality
 
 =head1 SYNOPSIS
 
@@ -19,7 +19,7 @@ None.  It's all object-based.
 
 Almost everything is an accessor.
 
-=head2 new( $file, $line, $column, $message )
+=head2 new( $file, $line, $column, $text )
 
 Create an object.  It's not very exciting.
 
@@ -29,17 +29,19 @@ sub new {
     my $class = shift;
 
     my $file = shift;
-    my $line = shift;
-    my $column = shift;
-    my $message = shift;
+    my $type = shift;
+    my $line = shift || 0;
+    my $column = shift || 0;
+    my $text = shift;
 
     # Add an element that says what tag caused the error (B, TR, etc)
     # so that we can match 'em up down the road.
     my $self  = {
         _file => $file,
+        _type => $type,
         _line => $line,
         _column => $column,
-        _message => $message,
+        _text => $text,
     };
 
     bless $self, $class;
@@ -75,6 +77,8 @@ it's bad practice.
 sub where {
     my $self = shift;
 
+    return "-" unless $self->line && $self->column;
+
     return sprintf( "(%d:%d)", $self->line, $self->column );
 }
 
@@ -87,31 +91,46 @@ Returns a nicely-formatted string for printing out to stdout or some similar use
 sub as_string {
     my $self = shift;
 
-    return sprintf( "%s %s %s", $self->file, $self->where, $self->message );
+    my %strings = (
+        1 => "Info",
+        2 => "Warning",
+        3 => "Error",
+    );
+
+    return sprintf( "%s %s %s: %s", $self->file, $self->where, $strings{$self->type}, $self->text );
 }
 
 =head2 file()
 
 Returns the filename of the error, as set by the caller.
 
+=head2 type()
+
+Returns the type of the error.  This will either be C<TIDY_ERROR>,
+C<TIDY_WARNING> or C<TIDY_INFO>.
+
 =head2 line()
 
-Returns the line number of the error.
+Returns the line number of the error, or 0 if there isn't an applicable
+line number.
 
 =head2 column()
 
-Returns the column number, starting from 0
+Returns the column number, or 0 if there isn't an applicable column
+number.
 
-=head2 message()
+=head2 text()
 
-Returns the HTML::Tidy message.
+Returns the text of the message.  This does not include a type string,
+like "Info: ".
 
 =cut
 
-sub file        { my $self = shift; return $self->{_file}       || '' }
-sub line        { my $self = shift; return $self->{_line}       || '' }
-sub column      { my $self = shift; return $self->{_column}     || '' }
-sub message     { my $self = shift; return $self->{_message}    || '' }
+sub file    { my $self = shift; return $self->{_file} }
+sub type    { my $self = shift; return $self->{_type} }
+sub line    { my $self = shift; return $self->{_line} }
+sub column  { my $self = shift; return $self->{_column} }
+sub text    { my $self = shift; return $self->{_text} }
 
 
 =head1 LICENSE
