@@ -17,5 +17,6 @@ t/message.t
 t/perfect.t
 t/pod.t
 t/pod-coverage.t
+t/segfault-form.t
 t/simple.t
 t/too-many-titles.t

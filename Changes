@@ -1,5 +1,14 @@
 Revision history for Perl extension HTML::Tidy.
 
+1.03_01 Thu Apr  1 23:43:07 CST 2004
+        [FIXES]
+        * If for some reason, Tidy can't create the cleaned up doc,
+          we don't segfault.  Added a test to check for it with an HTML
+          set that we know made it segfault in 1.02.
+
+        [ENHANCEMENTS]
+        * Portability enhancements from Dave Rolsky.
+
 1.02    Wed Mar  3 22:43:57 CST 2004
         [ENHANCEMENTS]
         * Added clean() method for cleaning up using the Tidy magic.

@@ -12,13 +12,13 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.02
+Version 1.03_01
 
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.35 2004/03/04 04:47:33 andy Exp $
+    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.36 2004/04/02 05:43:58 andy Exp $
 
 =cut
 
-our $VERSION = "1.02";
+our $VERSION = "1.03_01";
 
 =head1 SYNOPSIS
 

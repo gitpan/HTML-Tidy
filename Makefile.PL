@@ -44,9 +44,9 @@ WriteMakefile(
         'Test::Builder' => 0,
     },
 
-    LIBS                => [$libs], # e.g., '-lm'
+    LIBS                => [$libs],
     NEEDS_LINKING       => 1,
-    INC                 => '-I. -I/usr/local/include/tidy', # e.g., '-I. -I/usr/include/other'
+    INC                 => '-I. -I/usr/include/tidy -I/usr/local/include/tidy',
 
     EXE_FILES           => [qw(bin/webtidy)],
     dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
