@@ -1,6 +1,6 @@
 Revision history for Perl extension HTML::Tidy.
 
-1.03_01 Thu Apr  1 23:43:07 CST 2004
+1.04    Wed May 12 15:18:37 CDT 2004
         [FIXES]
         * If for some reason, Tidy can't create the cleaned up doc,
           we don't segfault.  Added a test to check for it with an HTML
@@ -14,7 +14,6 @@ Revision history for Perl extension HTML::Tidy.
         * Added clean() method for cleaning up using the Tidy magic.
           Thanks to Ben Trott.
 
-1.01_01 Sun Feb 29 11:39:07 CST 2004
         [FIXES]
         * Message parsing is split on a Ctrl-J instead of \n now.
           This should fix the test problems on Win32.
