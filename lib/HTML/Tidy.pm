@@ -12,13 +12,13 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.01
+Version 1.02
 
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.33 2004/02/29 17:41:29 andy Exp $
+    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.35 2004/03/04 04:47:33 andy Exp $
 
 =cut
 
-our $VERSION = "1.01_01";
+our $VERSION = "1.02";
 
 =head1 SYNOPSIS
 
@@ -170,7 +170,7 @@ sub parse {
     my $parse_errors;
     my $html = join( "", @_ );
 
-    my $errorblock = _calltidy( $html );
+    my $errorblock = _tidy_messages( $html );
     return unless defined $errorblock;
 
     my @lines = split( /\012/, $errorblock );
@@ -197,6 +197,21 @@ sub parse {
 
     return !$parse_errors;
 }
+
+=head2 clean( $str [, $str...] )
+
+Cleans a string, or list of strings, that make up a single HTML file.
+
+Returns true if all went OK, or false if there was some problem calling
+tidy, or parsing tidy's output.
+
+=cut
+
+sub clean {
+    my $self = shift;
+    return _tidy_clean(join( "", @_ ));
+}
+
 
 # Tells whether a given message object is one that we should keep.
 
