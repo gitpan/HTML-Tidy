@@ -1,0 +1,10 @@
+Revision history for Perl extension HTML::Tidy.
+
+0.00_01 Mon Feb 16 21:21:31 2004
+        Very first version, wrapping the tidy lib from sourceforge.
+        I don't expect that anyone will actually use this version,
+        besides me.
+
+        HTML::Tidy is to be a replacement for HTML::Lint.  It won't
+        quite be a drop-in replacement, but closed.
+

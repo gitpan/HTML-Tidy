@@ -1,0 +1,13 @@
+Changes
+Makefile.PL
+MANIFEST
+META.yml
+ppport.h
+README
+Tidy.xs
+bin/webtidy
+lib/HTML/Tidy.pm
+lib/HTML/Tidy/Error.pm
+lib/Test/HTML/Tidy.pm
+t/00.load.t
+t/simple.t
