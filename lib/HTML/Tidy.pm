@@ -12,26 +12,37 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 0.02
+Version 1.00
 
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.19 2004/02/21 06:15:45 andy Exp $
+    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.30 2004/02/26 04:25:14 andy Exp $
 
 =cut
 
-our $VERSION = "0.02";
+our $VERSION = "1.00";
 
 =head1 SYNOPSIS
 
-  use HTML::Tidy;
-  blah blah blah
+    use HTML::Tidy;
 
-=head1 DESCRIPTION
+    my $tidy = new HTML::Tidy;
+    $tidy->ignore( type => TIDY_WARNING );
+    $tidy->parse( "foo.html", $contents_of_foo );
 
-=cut
+    for my $message ( $tidy->messages ) {
+        print $message->as_string;
+    }
 
-=head1 EXPORTS
+=head1 Description
 
-Severity codes C<TIDY_ERROR>, C<TIDY_WARNING> and C<TIDY_ERROR>.
+C<HTML::Tidy> is an HTML checker in a handy dandy object.  It's meant as
+a replacement for L<HTML::Lint>.  If you're currently an L<HTML::Lint>
+user looking to migrate, see the section L<Converting from HTML::Lint>.
+
+=head1 Exports
+
+Message types C<TIDY_WARNING> and C<TIDY_ERROR>.
+
+Everything else is an object method.
 
 =cut
 
@@ -39,13 +50,12 @@ require Exporter;
 
 our @ISA = qw( Exporter DynaLoader );
 
-use constant TIDY_ERROR => 3;
-use constant TIDY_WARNING => 2;
-use constant TIDY_INFO => 1;
+use constant TIDY_ERROR => 2;
+use constant TIDY_WARNING => 1;
 
-our @EXPORT = qw( TIDY_ERROR TIDY_WARNING TIDY_INFO );
+our @EXPORT = qw( TIDY_ERROR TIDY_WARNING );
 
-=head1 METHODS
+=head1 Methods
 
 =head2 new()
 
@@ -83,7 +93,9 @@ sub messages {
 
 =head2 clear_messages()
 
-Clears the list of messages, in case you want to print and clear, print and clear.
+Clears the list of messages, in case you want to print and clear, print
+and clear.  If you don't clear the messages, then each time you call
+L<parse()> you'll be accumulating more in the list.
 
 =cut
 
@@ -93,9 +105,34 @@ sub clear_messages {
     $self->{messages} = [];
 }
 
-=head2 ignore( type => [ TIDY_X, TIDY_Y ] )
+=head2 ignore( parm => value [, parm => value ] )
 
-Specify types of messages to ignore.
+Specify types of messages to ignore.  Note that the ignore flags must be
+set B<before> calling C<parse()>.  You can call C<ignore()> as many times
+as necessary to set up all your restrictions; the options will stack up.
+
+=over 4
+
+=item * type => TIDY_(WARNING|ERROR)
+
+Specifies the type of messages you want to ignore, either warnings
+or errors.  If you wanted, you could call ignore on both and get no
+messages at all.
+
+    $tidy->ignore( type => TIDY_WARNING );
+
+=item * text => qr/regex/
+
+=item * text => [ qr/regex1/, qr/regex2/, ... ]
+
+Checks the text of the message against the specified regex or regexes,
+and ignores the message if there's a match.  The value for the I<text>
+parm may be either a regex, or a reference to a list of regexes.
+
+    $tidy->ignore( text => qr/DOCTYPE/ );
+    $tidy->ignore( text => [ qr/unsupported/, qr/proprietary/i ] );
+
+=back
 
 =cut
 
@@ -106,21 +143,27 @@ sub ignore {
     while ( @parms ) {
         my $parm = shift @parms;
         my $value = shift @parms;
+        my @values = ref($value) eq "ARRAY" ? @$value : ($value);
 
-        $self->{"ignore_$parm"} = $value;
-    }
+        die "Invalid ignore type of \"$parm\"" unless ($parm eq "text") or ($parm eq "type");
 
-    $self->{messages} = [];
-}
+        push( @{$self->{"ignore_$parm"}}, @values );
+    } # while
+} # ignore
 
-=head2 parse_file( $filename, $str [, $str...] )
+=head2 parse( $filename, $str [, $str...] )
+
+Parses a string, or list of strings, that make up a single HTML file.
+
+The I<$filename> parm is only used as an identifier for your use.
+The file is not actually read and opened.
 
 Returns true if all went OK, or false if there was some problem calling
 tidy, or parsing tidy's output.
 
 =cut
 
-sub parse_file {
+sub parse {
     my $self = shift;
     my $filename = shift;
 
@@ -132,13 +175,18 @@ sub parse_file {
 
     my @lines = split( /\n/, $errorblock );
     for my $line ( @lines ) {
-        my $message;
-        if ( $line =~ /^Info: (.+)$/ ) {
-            $message = HTML::Tidy::Message->new( $filename, TIDY_INFO, undef, undef, $1 );
+        chomp $line;
 
-        } elsif ( $line =~ /^line (\d+) column (\d+) - (Warning|Error): (.+)$/ ) {
+        my $message;
+        if ( $line =~ /^line (\d+) column (\d+) - (Warning|Error): (.+)$/ ) {
             my $type = ($3 eq "Warning") ? TIDY_WARNING : TIDY_ERROR;
             $message = HTML::Tidy::Message->new( $filename, $type, $1, $2, $4 );
+
+        } elsif ( $line =~ /^\d+ warnings?, \d+ errors? were found!/ ) {
+            # Summary line we don't want
+
+        } elsif ( $line eq "No warnings or errors were found." ) {
+            # Summary line we don't want
 
         } else {
             warn "Unknown error type: $line";
@@ -160,7 +208,13 @@ sub _is_keeper {
     my @ignore_types = @{$self->{ignore_type}};
     if ( @ignore_types ) {
         my $type = $message->type;
-        return if grep { $_ == $type } @ignore_types;
+        return if grep { $type == $_ } @ignore_types;
+    }
+
+    my @ignore_texts = @{$self->{ignore_text}};
+    if ( @ignore_texts ) {
+        my $text = $message->text;
+        return if grep { $text =~ $_ } @ignore_texts;
     }
 
     return 1;
@@ -173,17 +227,88 @@ XSLoader::load('HTML::Tidy', $VERSION);
 
 __END__
 
-=head1 BUGS & FEEDBACK
+=head1 Converting From HTML::Lint
+
+L<HTML::Tidy> is different from L<HTML::Lint> in a number of crucial ways.
+
+=over 4
+
+=item * It's not pure Perl
+
+C<HTML::Tidy> is mostly a happy wrapper around libtidy.
+
+=item * The real work is done by someone else
+
+Changes to libtidy may come down the pipe that I don't have control over.
+That's the price we pay for having it do a darn good job.
+
+=item * It's no longer bundled with its C<Test::> counterpart
+
+L<HTML::Lint> came bundled with C<Test::HTML::Lint>, but
+L<Test::HTML::Tidy> is a separate distribution.  This saves the people
+who don't want the C<Test::> framework from pulling it in, and all its
+prerequisite modules.
+
+=back
+
+=head1 Building libtidy
+
+The tidy folks don't distribute a libtidy distribution.  You'll have to
+check out the CVS tree and build it from there.  Here are the steps.
+
+Login in to the anonymous CVS server at SourceForge:
+
+    $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/tidy login
+    (Logging in to anonymous@cvs.sf.net)
+    CVS password: [hit ENTER]
+
+Check out the source tree:
+
+    $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/tidy co tidy
+    cvs server: Updating tidy
+    cvs server: Updating tidy/CVSROOT
+    U tidy/CVSROOT/checkoutlist
+    U tidy/CVSROOT/commitinfo
+    ... many many files come out ...
+
+If you're on Mac OS X, you'll need to tell the Makefile that you use
+ranlib:
+
+    $ export set RANLIB=ranlib
+
+Change to the directory with the F<Makefile> in it, and run F<make>.
+This example uses the GNU make F<Makefile>.
+
+    $ cd tidy/build/gmake/
+
+    $ make
+    if [ ! -d ./obj ]; then mkdir ./obj; fi
+    gcc -o obj/access.o ...
+    ... etc etc etc ...
+
+Install the libs, headers and the F<tidy> executable:
+
+    $ sudo make install
+
+If you're on Mac OS X, you'll have to run F<ranlib> again on the
+installed lib:
+
+    $ sudo ranlib /usr/local/lib/libtidy.a
+
+Once these steps are complete, you'll be able to go back to HTML::Tidy
+and build it normally.
+
+=head1 Bugs & Feedback
 
 I welcome your comments and suggestions.  Please send them to
 C<< <bug-html-tidy@rt.cpan.org> >> so that they can be tracked in the
 RT ticket tracking system.
 
-=head1 AUTHOR
+=head1 Author
 
 Andy Lester, C<< <andy@petdance.com> >>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 Copyright & License
 
 Copyright (C) 2004 by Andy Lester
 

@@ -10,7 +10,7 @@ my $html = do { local $/ = undef; <DATA> };
 my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 
-$tidy->parse_file( "-", $html );
+$tidy->parse( "-", $html );
 
 my @messages = $tidy->messages;
 is( scalar @messages, 5 );

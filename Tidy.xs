@@ -26,7 +26,8 @@ _calltidy(input)
             rc = tidyParseString( tdoc, input );           // Parse the input
 
         if ( rc >= 0 ) {
-            char *str = (char *)errbuf.bp;
+            const uint totalErrors = tidyErrorCount(tdoc) + tidyWarningCount(tdoc) + tidyAccessWarningCount(tdoc);
+            char *str = totalErrors ? (char *)errbuf.bp : "";
             RETVAL = newSVpvn( str, strlen(str) );
         } else {
             XSRETURN_UNDEF;

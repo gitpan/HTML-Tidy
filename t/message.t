@@ -19,13 +19,13 @@ WITH_LINE_NUMBERS: {
 }
 
 WITHOUT_LINE_NUMBERS: {
-    my $error = HTML::Tidy::Message->new( "bar.pl", TIDY_INFO, undef, undef, "Blah blah" );
+    my $error = HTML::Tidy::Message->new( "bar.pl", TIDY_WARNING, undef, undef, "Blah blah" );
     isa_ok( $error, 'HTML::Tidy::Message' );
 
     is( $error->file, 'bar.pl' );
-    is( $error->type, TIDY_INFO );
+    is( $error->type, TIDY_WARNING );
     is( $error->line, 0 );
     is( $error->column, 0 );
     is( $error->text, "Blah blah" );
-    is( $error->as_string, 'bar.pl - Info: Blah blah' );
+    is( $error->as_string, 'bar.pl - Warning: Blah blah' );
 }

@@ -8,7 +8,14 @@ Tidy.xs
 bin/webtidy
 lib/HTML/Tidy.pm
 lib/HTML/Tidy/Message.pm
-lib/Test/HTML/Tidy.pm
 t/00.load.t
+t/extra-quote.t
+t/ignore.t
+t/ignore-text.t
+t/levels.t
 t/message.t
+t/perfect.t
+t/pod.t
+t/pod-coverage.t
 t/simple.t
+t/too-many-titles.t

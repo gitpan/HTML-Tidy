@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.3 2004/02/21 05:56:56 andy Exp $
+# $Id: Message.pm,v 1.6 2004/02/25 06:22:56 andy Exp $
 package HTML::Tidy::Message;
 
 use strict;
@@ -92,9 +92,8 @@ sub as_string {
     my $self = shift;
 
     my %strings = (
-        1 => "Info",
-        2 => "Warning",
-        3 => "Error",
+        1 => "Warning",
+        2 => "Error",
     );
 
     return sprintf( "%s %s %s: %s", $self->file, $self->where, $strings{$self->type}, $self->text );
@@ -107,7 +106,7 @@ Returns the filename of the error, as set by the caller.
 =head2 type()
 
 Returns the type of the error.  This will either be C<TIDY_ERROR>,
-C<TIDY_WARNING> or C<TIDY_INFO>.
+or C<TIDY_WARNING>.
 
 =head2 line()
 

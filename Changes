@@ -1,14 +1,11 @@
 Revision history for Perl extension HTML::Tidy.
 
-0.01
-        [INFRASTRUCTURE]
-        * HTML::Tidy::Error is now HTML::Tidy::Message.
+1.00    Wed Feb 25 22:19:28 CST 2004
 
-0.00_01 Mon Feb 16 21:21:31 2004
-        Very first version, wrapping the tidy lib from sourceforge.
-        I don't expect that anyone will actually use this version,
-        besides me.
+        First real version, released on an unsuspecting world.
 
-        HTML::Tidy is to be a replacement for HTML::Lint.  It won't
-        quite be a drop-in replacement, but closed.
+        If you were one of the ones to get in on 0.01 thru 0.04, you may
+        want to check your code.  The API has changed some.  I know that
+        parse_file() is now parse(), for example.  There may be others.
 
+        Going forward, of course, I'll note any other API changes here.

@@ -1,7 +1,26 @@
 use 5.006001;
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+use ExtUtils::Liblist;
+
+my @vars = ExtUtils::Liblist->ext( "-ltidy", 0, 1 );
+my $libs = $vars[2];
+
+if ( !$libs ) {
+    $libs = "-ltidy";
+    print <<EOF;
+
+It seems that you don't have libtidy installed.  HTML::Tidy does no
+real work on its own.  See the section "INSTALLING LIBTIDY" in Tidy.pm
+for a step-by-step walkthrough of building the lib.  You can also refer
+to http://tidy.sourceforge.net/.
+
+If you do have libtidy installed, and I just haven't detected it,
+go ahead and try building.  If HTML::Tidy builds and tests correctly,
+then please let Andy Lester know at bug-html-tidy@rt.cpan.org so that
+he can fix the library detection code.
+
+EOF
+}
 
 eval { require LWP::Simple; };
 
@@ -9,7 +28,7 @@ if ( $@ ) {
     print <<EOF;
 
 NOTE: It seems that you don't have LWP::Simple installed.
-      The weblint program will not be able to retrieve web pages.
+      The webtidy program will not be able to retrieve web pages.
 
 EOF
 }
@@ -24,16 +43,12 @@ WriteMakefile(
         'Test::More'    => 0,
         'Test::Builder' => 0,
     },
-    LIBS                => ['-ltidy'], # e.g., '-lm'
-    DEFINE              => '', # e.g., '-DHAVE_SOMETHING'
+
+    LIBS                => [$libs], # e.g., '-lm'
+    NEEDS_LINKING       => 1,
     INC                 => '-I. -I/usr/local/include/tidy', # e.g., '-I. -I/usr/include/other'
-    # Un-comment this if you add C files to link with later:
-    # OBJECT            => '$(O_FILES)', # link all the C files too
 
     EXE_FILES           => [qw(bin/webtidy)],
-    dist => {
-        COMPRESS => 'gzip -9f', 
-        SUFFIX => 'gz',
-    },
+    dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'HTML-Tidy-*' },
 );
