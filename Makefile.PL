@@ -2,7 +2,7 @@ use 5.006001;
 use ExtUtils::MakeMaker;
 use ExtUtils::Liblist;
 
-my @vars = ExtUtils::Liblist->ext( "-ltidy", 0, 1 );
+my @vars = ExtUtils::Liblist->ext( "-L/sw/lib -ltidy", 0, 1 );
 my $libs = $vars[2];
 
 if ( !$libs ) {
@@ -46,7 +46,7 @@ WriteMakefile(
 
     LIBS                => [$libs],
     NEEDS_LINKING       => 1,
-    INC                 => '-I. -I/usr/include/tidy -I/usr/local/include/tidy',
+    INC                 => '-I. -I/usr/include/tidy -I/usr/local/include/tidy -I/sw/include/tidy',
 
     EXE_FILES           => [qw(bin/webtidy)],
     dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

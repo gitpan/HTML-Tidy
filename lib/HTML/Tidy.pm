@@ -12,13 +12,13 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.04
+Version 1.05_01
 
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.37 2004/05/12 20:18:54 andy Exp $
+    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.39 2004/09/03 04:15:16 andy Exp $
 
 =cut
 
-our $VERSION = "1.04";
+our $VERSION = "1.05_01";
 
 =head1 SYNOPSIS
 
@@ -167,13 +167,23 @@ sub parse {
     my $self = shift;
     my $filename = shift;
 
-    my $parse_errors;
     my $html = join( "", @_ );
 
     my $errorblock = _tidy_messages( $html );
     return unless defined $errorblock;
 
-    my @lines = split( /\012/, $errorblock );
+
+    return !$self->_parse_errors($filename, $errorblock);
+}
+
+sub _parse_errors {
+    my $self = shift;
+    my $filename = shift;
+    my $errs = shift;
+
+    my $parse_errors;
+
+    my @lines = split( /\012/, $errs );
     for my $line ( @lines ) {
         chomp $line;
 
@@ -188,14 +198,25 @@ sub parse {
         } elsif ( $line eq "No warnings or errors were found." ) {
             # Summary line we don't want
 
+        } elsif ( $line eq "This document has errors that must be fixed before" ){
+            # Summary line we don't want
+
+        } elsif ( $line eq "using HTML Tidy to generate a tidied up version." ){
+            # Summary line we don't want
+
+        } elsif ( $line =~ m/^Info:/  ) {
+            # Info line we don't want
+
+        } elsif ( $line =~ m/^\s*$/  ) {
+            # Blank line we don't want
+
         } else {
             warn "Unknown error type: $line";
             ++$parse_errors;
         }
-        push( @{$self->{messages}}, $message ) if $self->_is_keeper( $message );
-    }
-
-    return !$parse_errors;
+        push( @{$self->{messages}}, $message ) if $message && $self->_is_keeper( $message );
+    } # for
+    return $parse_errors;
 }
 
 =head2 clean( $str [, $str...] )
@@ -209,7 +230,10 @@ tidy, or parsing tidy's output.
 
 sub clean {
     my $self = shift;
-    return _tidy_clean(join( "", @_ ));
+    my ($cleaned, $errbuf) = _tidy_clean(join( "", @_ ));
+
+    $self->_parse_errors('', $errbuf);
+    return $cleaned;
 }
 
 

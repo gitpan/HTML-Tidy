@@ -39,8 +39,15 @@ Check out the source tree:
     U tidy/CVSROOT/commitinfo
     ... many many files come out ...
 
-If you're on Mac OS X, you'll need to tell the Makefile that you use
-ranlib:
+
+OS-SPECIFIC NOTES
+
+If you're on Debian, you can install the libtidy-dev package.
+
+If you're on Mac OS X and you've got Fink, you can install the
+tidy-dev package (you must use the *source* package; the binary one
+is too old). Otherwise, you'll need to tell the Makefile that you
+use ranlib:
 
     $ export set RANLIB=ranlib
 
@@ -58,8 +65,8 @@ Install the libs, headers and the tidy executable:
 
     $ sudo make install
 
-If you're on Mac OS X, you'll have to run ranlib again on the installed
-lib:
+If you're on Mac OS X, you'll have to run ranlib again on the
+installed lib:
 
     $ sudo ranlib /usr/local/lib/libtidy.a
 

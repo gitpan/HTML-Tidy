@@ -1,5 +1,15 @@
 Revision history for Perl extension HTML::Tidy.
 
+1.05_01 Thu Sep  2 21:01:52 CDT 2004
+        [FIXES]
+        * Fixed some segfaults when calling $tidy->clean().  Thanks
+          to Aaron Patterson, fixes CPAN #7254.
+
+        * Made the Makefile.PL more portable under Mac OS X where
+          libtidy had been installed by Fink.  Also added some
+          Debian and OS X notes to the README.  Thanks to Dan
+          Friedman.
+
 1.04    Wed May 12 15:18:37 CDT 2004
         [FIXES]
         * If for some reason, Tidy can't create the cleaned up doc,
