@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!perl -Tw
 
 use strict;
 use Test::More tests => 3;
@@ -25,6 +25,7 @@ IGNORE_BOGOTAG: {
     $tidy->parse( "DATA", $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
+    s/[\r\n]+\z// for @returned;
     is_deeply( \@returned, \@expected_messages, "Matching warnings" );
 }
 

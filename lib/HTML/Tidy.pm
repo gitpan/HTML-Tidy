@@ -12,19 +12,17 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.05_01
-
-    $Header: /home/cvs/html-tidy/lib/HTML/Tidy.pm,v 1.39 2004/09/03 04:15:16 andy Exp $
+Version 1.05_02
 
 =cut
 
-our $VERSION = "1.05_01";
+our $VERSION = "1.05_02";
 
 =head1 SYNOPSIS
 
     use HTML::Tidy;
 
-    my $tidy = new HTML::Tidy;
+    my $tidy = HTML::Tidy->new( {config_file => 'path/to/config'} );
     $tidy->ignore( type => TIDY_WARNING );
     $tidy->parse( "foo.html", $contents_of_foo );
 
@@ -63,18 +61,31 @@ Create an HTML::Lint object.
 
     my $tidy = HTML::Tidy->new();
 
+Optionally you can give a hashref of configuration parms.  Currently,
+only C<config_file> is supported.
+
+    my $tidy = HTML::Tidy->new( {config_file => 'path/to/tidy.cfg'} );
+
+This configuration file will be read and used when you clean an HTML file.
+
 =cut
 
 sub new {
     my $class = shift;
+    my $args = shift || {};
 
-    my $self = {
+    my $self = bless {
         messages => [],
         ignore_type => [],
         ignore_text => [],
-    };
+        config_file => "",
+    }, $class;
 
-    bless $self, $class;
+    for my $key ( qw( config_file ) ) {
+        if ( exists $args->{$key} ) {
+            $self->{$key} = $args->{$key};
+        }
+    }
 
     return $self;
 }
@@ -192,25 +203,32 @@ sub _parse_errors {
             my $type = ($3 eq "Warning") ? TIDY_WARNING : TIDY_ERROR;
             $message = HTML::Tidy::Message->new( $filename, $type, $1, $2, $4 );
 
-        } elsif ( $line =~ /^\d+ warnings?, \d+ errors? were found!/ ) {
+        }
+        elsif ( $line =~ /^\d+ warnings?, \d+ errors? were found!/ ) {
             # Summary line we don't want
 
-        } elsif ( $line eq "No warnings or errors were found." ) {
+        }
+        elsif ( $line eq "No warnings or errors were found." ) {
             # Summary line we don't want
 
-        } elsif ( $line eq "This document has errors that must be fixed before" ){
+        }
+        elsif ( $line eq "This document has errors that must be fixed before" ){
             # Summary line we don't want
 
-        } elsif ( $line eq "using HTML Tidy to generate a tidied up version." ){
+        }
+        elsif ( $line eq "using HTML Tidy to generate a tidied up version." ){
             # Summary line we don't want
 
-        } elsif ( $line =~ m/^Info:/  ) {
+        }
+        elsif ( $line =~ m/^Info:/  ) {
             # Info line we don't want
 
-        } elsif ( $line =~ m/^\s*$/  ) {
+        }
+        elsif ( $line =~ m/^\s*$/  ) {
             # Blank line we don't want
 
-        } else {
+        }
+        else {
             warn "Unknown error type: $line";
             ++$parse_errors;
         }
@@ -230,7 +248,12 @@ tidy, or parsing tidy's output.
 
 sub clean {
     my $self = shift;
-    my ($cleaned, $errbuf) = _tidy_clean(join( "", @_ ));
+
+    my $text = join( "", @_ );
+    if ( defined $text ) {
+        $text .= "\n";
+    }
+    my ($cleaned, $errbuf) = _tidy_clean( $text, $self->{config_file} );
 
     $self->_parse_errors('', $errbuf);
     return $cleaned;

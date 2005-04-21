@@ -1,3 +1,5 @@
+#!perl -Tw
+
 use strict;
 use Test::More tests => 3;
 
@@ -17,6 +19,7 @@ isa_ok( $tidy, "HTML::Tidy" );
 $tidy->parse( "-", $html );
 
 my @returned = map { $_->as_string } $tidy->messages;
+s/[\r\n]+\z// for @returned;
 is_deeply( \@returned, \@expected, "Matching warnings" );
 
 __DATA__

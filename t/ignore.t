@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!perl -Tw
 
 use strict;
 use Test::More tests => 7;
@@ -30,6 +30,7 @@ WARNINGS_ONLY: {
     $tidy->parse( "-", $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
+    s/[\r\n]+\z// for @returned;
     is_deeply( \@returned, \@expected_warnings, "Matching warnings" );
 }
 
@@ -41,6 +42,7 @@ ERRORS_ONLY: {
     $tidy->parse( "-", $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
+    s/[\r\n]+\z// for @returned;
     is_deeply( \@returned, \@expected_errors, "Matching errors" );
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: webtidy,v 1.7 2004/02/26 04:11:47 andy Exp $
+# $Id: webtidy 69 2004-02-26 04:11:47Z andy $
 
 use strict;
 

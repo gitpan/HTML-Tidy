@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.6 2004/02/25 06:22:56 andy Exp $
+# $Id: Message.pm 65 2004-02-25 06:22:56Z andy $
 package HTML::Tidy::Message;
 
 use strict;

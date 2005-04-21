@@ -12,7 +12,7 @@ MODULE = HTML::Tidy         PACKAGE = HTML::Tidy
 SV *
 _tidy_messages(input)
     INPUT:
-        char *input
+        const char *input
     CODE:
         TidyBuffer errbuf = {0};
         TidyDoc tdoc = tidyCreate();                   // Initialize "document"
@@ -25,9 +25,15 @@ _tidy_messages(input)
 
         if ( rc >= 0 ) {
             const uint totalErrors = tidyErrorCount(tdoc) + tidyWarningCount(tdoc) + tidyAccessWarningCount(tdoc);
-            char *str = totalErrors ? (char *)errbuf.bp : "";
-            RETVAL = newSVpvn( str, strlen(str) );
-        } else {
+            const char *str = totalErrors ? (const char *)errbuf.bp : "";
+            if ( str ) {
+                RETVAL = newSVpvn( str, strlen(str) );
+            }
+            else {
+                RETVAL = &PL_sv_undef;
+            }
+        }
+        else {
             XSRETURN_UNDEF;
         }
 
@@ -39,15 +45,19 @@ _tidy_messages(input)
 
 
 void
-_tidy_clean(input)
+_tidy_clean(input, configfile)
     INPUT:
-        char *input
+        const char *input
+        const char *configfile
     PPCODE:
         TidyBuffer errbuf = {0};
         TidyBuffer output = {0};
 
         TidyDoc tdoc = tidyCreate();                // Initialize "document"
         int rc;
+
+        if ( configfile && *configfile )
+            rc = tidyLoadConfig( tdoc, configfile );
 
         rc = tidyOptSetInt( tdoc, TidyWrapLen, 0 ); // Don't word-wrap
         if ( rc >= 0 )
@@ -63,14 +73,14 @@ _tidy_clean(input)
         if ( rc >= 0)
             rc = tidyRunDiagnostics( tdoc );
         if ( rc >= 0 ) {
-            char *str;
-            str = (char *)output.bp;
+            const char *str = (const char *)output.bp;
             if ( str )
                 XPUSHs( sv_2mortal(newSVpvn(str, strlen(str))) );
 
             if ( errbuf.bp )
                 XPUSHs( sv_2mortal(newSVpvn(errbuf.bp, strlen(errbuf.bp))) );
-        } else {
+        }
+        else {
             XSRETURN_UNDEF;
         }
 

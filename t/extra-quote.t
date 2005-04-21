@@ -1,3 +1,5 @@
+#!perl -Tw
+
 use warnings;
 use strict;
 
@@ -28,6 +30,7 @@ my @messages = $tidy->messages;
 is( scalar @messages, 3 );
 
 my @strings = map { $_->as_string } @messages;
+s/[\r\n]+\z// for @strings;
 is_deeply( \@strings, \@expected, "Matching warnings" );
 
 __DATA__

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!perl -Tw
 
 use strict;
 use Test::More tests => 3;
@@ -20,6 +20,7 @@ chomp @expected;
 shift @expected; # First one's blank
 
 my @messages = map { $_->as_string } $tidy->messages;
+s/[\r\n]+\z// for @messages;
 is_deeply( \@messages, \@expected, "Matching messages" );
 
 __DATA__

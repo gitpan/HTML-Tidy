@@ -1,14 +1,13 @@
 Changes
 Makefile.PL
 MANIFEST
-META.yml
 ppport.h
 README
 Tidy.xs
 bin/webtidy
 lib/HTML/Tidy.pm
 lib/HTML/Tidy/Message.pm
-t/00.load.t
+t/00-load.t
 t/extra-quote.t
 t/ignore.t
 t/ignore-text.t
@@ -20,3 +19,7 @@ t/pod-coverage.t
 t/segfault-form.t
 t/simple.t
 t/too-many-titles.t
+t/venus.cfg
+t/venus.html
+t/venus.t
+META.yml                                 Module meta-data (added by MakeMaker)

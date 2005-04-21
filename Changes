@@ -1,5 +1,16 @@
 Revision history for Perl extension HTML::Tidy.
 
+1.05_02 Wed Apr 20 22:43:31 CDT 2005
+        [FIXES]
+        * Made clean() return undef if it has no input.  Thanks to
+          Dominique Quatravax.  See RT #8051.
+        * Removed line-endings so that we're happy cross-platform in
+          the tests.  Thanks to the anonymous contributor of RT #7836.
+
+        [ENHANCEMENTS]
+        * Added support for config files.  Thanks to Anders Ardo!
+          See RT #11120.
+
 1.05_01 Thu Sep  2 21:01:52 CDT 2004
         [FIXES]
         * Fixed some segfaults when calling $tidy->clean().  Thanks
