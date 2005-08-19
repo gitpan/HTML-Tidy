@@ -12,11 +12,11 @@ HTML::Tidy - Web validation in a Perl object
 
 =head1 VERSION
 
-Version 1.05_02
+Version 1.06
 
 =cut
 
-our $VERSION = "1.05_02";
+our $VERSION = "1.06";
 
 =head1 SYNOPSIS
 
@@ -34,7 +34,7 @@ our $VERSION = "1.05_02";
 
 C<HTML::Tidy> is an HTML checker in a handy dandy object.  It's meant as
 a replacement for L<HTML::Lint>.  If you're currently an L<HTML::Lint>
-user looking to migrate, see the section L<Converting from HTML::Lint>.
+user looking to migrate, see the section L</Converting from HTML::Lint>.
 
 =head1 Exports
 
@@ -316,16 +316,16 @@ prerequisite modules.
 =head1 Bugs & Feedback
 
 I welcome your comments and suggestions.  Please send them to
-C<< <bug-html-tidy@rt.cpan.org> >> so that they can be tracked in the
+C<< <bug-html-tidy at rt.cpan.org> >> so that they can be tracked in the
 RT ticket tracking system.
 
 =head1 Author
 
-Andy Lester, C<< <andy@petdance.com> >>
+Andy Lester, C<< <andy at petdance.com> >>
 
 =head1 Copyright & License
 
-Copyright (C) 2004 by Andy Lester
+Copyright (C) 2005 by Andy Lester
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.1 or,
