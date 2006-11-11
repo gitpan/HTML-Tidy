@@ -1,5 +1,6 @@
 #!perl -Tw
 
+use warnings;
 use strict;
 use Test::More tests => 3;
 
@@ -17,16 +18,16 @@ shift @expected_messages; # First one's blank
 
 IGNORE_BOGOTAG: {
     my $tidy = new HTML::Tidy;
-    isa_ok( $tidy, "HTML::Tidy" );
+    isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( text => qr/bogotag/ );
     $tidy->ignore( text => [ qr/UNESCAPED/, qr/doctype/i ] );
     # The qr/UNESCAPED/ should not ignore anything because there's no /i
-    $tidy->parse( "DATA", $html );
+    $tidy->parse( 'DATA', $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
     s/[\r\n]+\z// for @returned;
-    is_deeply( \@returned, \@expected_messages, "Matching warnings" );
+    is_deeply( \@returned, \@expected_messages, 'Matching warnings' );
 }
 
 __DATA__

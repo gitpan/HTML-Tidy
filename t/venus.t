@@ -1,27 +1,20 @@
 #!perl -Tw
 
+use warnings;
+use strict;
 use Test::More;
-
-BEGIN {
-    eval { use Encode };
-    plan skip_all => "Encode not installed." if $@;
-}
 
 BEGIN {
     plan tests => 3;
     use_ok( 'HTML::Tidy' );
 }
 
-my $filename = "t/venus.html";
-open( my $fh, $filename ) or die "Can't open $filename: $!\n";
+my $filename = 't/venus.html';
+open( my $fh, '<', $filename ) or die "Can't open $filename: $!\n";
 my $raw = do { local $/ = undef; <$fh> };
 close $fh;
 
-my $charset='iso-8859-1';
-#Convert to UTF8 for Tidy
-Encode::from_to( $raw, $charset, 'utf8', Encode::FB_HTMLCREF);
-
-$cfg = 't/venus.cfg';
+my $cfg = 't/venus.cfg';
 my $tidy = new HTML::Tidy( {config_file => $cfg} );
 isa_ok( $tidy, 'HTML::Tidy' );
 
@@ -31,7 +24,7 @@ chomp @cooked;
 
 my @expected = <DATA>;
 chomp @expected;
-is_deeply( \@cooked, \@expected, "Cooked stuff looks like what we expected" );
+is_deeply( \@cooked, \@expected, 'Cooked stuff looks like what we expected' );
 
 __DATA__
 <html>
@@ -81,24 +74,18 @@ __DATA__
       <a href="../../General/Credits.html">Credits</a> | 
       <a href="../../General/Feedback.html">Feedback</a> |</h4>
     </center>
-    <address>
-      <center>
-        <p>
-          <img src="../../WetlandGraphics/GoldbarThread.gif" width="648" height="4" align="bottom" />
-        </p>
-      </center>
-      <div align="center"></div>
-      <address>
-        <center>
-          <address>Created for the Museums in the Classroom program sponsored by Illinois State Board of Education, the Brookfield Zoo, the Illinois State Museum., and Kildeer Countryside CCSD 96.</address>
-          <address> </address>
-          <address>Authors: Twin Groves Museums in the Classroom Team,</address>
-          <address>School: Twin Groves Junior High School, Buffalo Grove, Illinois 60089</address>
-        </center>
-      </address>
-      <address>
-        <center>Created: 27 June 1998- Updated: 6 October 2003</center>
-      </address>
-    </address>
+    <center>
+      <p>
+        <img src="../../WetlandGraphics/GoldbarThread.gif" width="648" height="4" align="bottom" />
+      </p>
+    </center>
+    <div align="center"></div>
+    <center>
+      <address>Created for the Museums in the Classroom program sponsored by Illinois State Board of Education, the Brookfield Zoo, the Illinois State Museum., and Kildeer Countryside CCSD 96.</address>
+      <address> </address>
+      <address>Authors: Twin Groves Museums in the Classroom Team,</address>
+      <address>School: Twin Groves Junior High School, Buffalo Grove, Illinois 60089</address>
+    </center>
+    <center>Created: 27 June 1998- Updated: 6 October 2003</center>
   </body>
 </html>

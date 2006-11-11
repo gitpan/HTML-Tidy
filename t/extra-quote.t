@@ -16,7 +16,7 @@ my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 
 $tidy->ignore( text => qr/DOCTYPE/ );
-$tidy->parse( "-", $html );
+$tidy->parse( '-', $html );
 
 my @expected = split /\n/, q{
 - (4:1) Warning: <img> unexpected or duplicate quote mark
@@ -31,7 +31,7 @@ is( scalar @messages, 3 );
 
 my @strings = map { $_->as_string } @messages;
 s/[\r\n]+\z// for @strings;
-is_deeply( \@strings, \@expected, "Matching warnings" );
+is_deeply( \@strings, \@expected, 'Matching warnings' );
 
 __DATA__
 <html>

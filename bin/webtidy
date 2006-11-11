@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
-# $Id: webtidy 69 2004-02-26 04:11:47Z andy $
 
+use warnings;
 use strict;
 
 use Getopt::Long;
@@ -12,10 +12,10 @@ my $context;
 my $tidy = new HTML::Tidy;
 
 GetOptions(
-    "help"          => \$help,
-    "context:i"     => \$context,
-    "noerrors"      => sub { $tidy->ignore( type => [ TIDY_ERROR ] ) },
-    "nowarnings"    => sub { $tidy->ignore( type => [ TIDY_WARNING ] ) },
+    'help'          => \$help,
+    'context:i'     => \$context,
+    'noerrors'      => sub { $tidy->ignore( type => [ TIDY_ERROR ] ) },
+    'nowarnings'    => sub { $tidy->ignore( type => [ TIDY_WARNING ] ) },
 ) or $help = 1;
 
 if ( !@ARGV || $help ) {
@@ -30,20 +30,20 @@ for my $url ( @ARGV ) {
     if ( $url =~ /^https?:/ ) {
         eval { require LWP::Simple };
         if ( $@ ) {
-            warn "Can't retrieve URLs without LWP::Simple installed";
+            warn q{Can't retrieve URLs without LWP::Simple installed};
             next;
         }
 
         my $content = LWP::Simple::get( $url );
         if ( $content ) {
-            @lines = split( "\n", $content );
+            @lines = split( /\n/, $content );
             $_ = "$_\n" for @lines;
         } else {
             warn "Unable to fetch $url\n";
             next;
         }
     } else {
-        open( my $fh, $url ) or die "Can't open $url: $!";
+        open( my $fh, '<', $url ) or die "Can't open $url: $!";
         @lines = <$fh>;
         close $fh;
     }
@@ -62,7 +62,7 @@ for my $url ( @ARGV ) {
             $end = $#lines if $end > $#lines;
 
             for my $i ( $start..$end ) {
-                printf( "%5d: %s", $i+1, $lines[$i] );
+                printf( '%5d: %s', $i+1, $lines[$i] );
             }
             print "\n";
         }

@@ -1,13 +1,14 @@
 #!perl -Tw
 
+use warnings;
 use strict;
 use Test::More tests => 3;
 
 BEGIN { use_ok( 'HTML::Tidy' ); }
 
 my $tidy = new HTML::Tidy;
-isa_ok( $tidy, "HTML::Tidy" );
-$tidy->parse( "-", <DATA> );
+isa_ok( $tidy, 'HTML::Tidy' );
+$tidy->parse( '-', <DATA> );
 
 my @expected = split /\n/, q{
 - (1:1) Warning: missing <!DOCTYPE> declaration
@@ -21,7 +22,7 @@ shift @expected; # First one's blank
 
 my @messages = map { $_->as_string } $tidy->messages;
 s/[\r\n]+\z// for @messages;
-is_deeply( \@messages, \@expected, "Matching messages" );
+is_deeply( \@messages, \@expected, 'Matching messages' );
 
 __DATA__
 <HTML>

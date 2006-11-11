@@ -1,11 +1,12 @@
 #!perl -Tw
 
 use strict;
+use warnings;
 use Test::More tests => 7;
 
 BEGIN { use_ok( 'HTML::Tidy' ); }
 
-my $html = do { local $/; <DATA> };
+my $html = do { local $/ = undef; <DATA> };
 
 my @expected_warnings = split /\n/, q{
 - (1:1) Warning: missing <!DOCTYPE> declaration
@@ -24,34 +25,34 @@ shift @expected_errors; # First one's blank
 
 WARNINGS_ONLY: {
     my $tidy = new HTML::Tidy;
-    isa_ok( $tidy, "HTML::Tidy" );
+    isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( type => TIDY_ERROR );
-    $tidy->parse( "-", $html );
+    $tidy->parse( '-', $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
     s/[\r\n]+\z// for @returned;
-    is_deeply( \@returned, \@expected_warnings, "Matching warnings" );
+    is_deeply( \@returned, \@expected_warnings, 'Matching warnings' );
 }
 
 ERRORS_ONLY: {
     my $tidy = new HTML::Tidy;
-    isa_ok( $tidy, "HTML::Tidy" );
+    isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( type => TIDY_WARNING );
-    $tidy->parse( "-", $html );
+    $tidy->parse( '-', $html );
 
     my @returned = map { $_->as_string } $tidy->messages;
     s/[\r\n]+\z// for @returned;
-    is_deeply( \@returned, \@expected_errors, "Matching errors" );
+    is_deeply( \@returned, \@expected_errors, 'Matching errors' );
 }
 
 DIES_ON_ERROR: {
     my $tidy = new HTML::Tidy;
-    isa_ok( $tidy, "HTML::Tidy" );
+    isa_ok( $tidy, 'HTML::Tidy' );
 
     eval { $tidy->ignore( blongo => TIDY_WARNING ) };
-    like( $@, qr/^Invalid ignore type.+blongo/, "Throws an error" );
+    like( $@, qr/^Invalid ignore type.+blongo/, 'Throws an error' );
 }
 
 __DATA__

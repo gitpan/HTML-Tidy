@@ -12,13 +12,13 @@ my $html = do { local $/ = undef; <DATA> };
 my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 
-$tidy->parse( "-", $html );
+$tidy->parse( '-', $html );
 
 my @messages = $tidy->messages;
 is( scalar @messages, 5 );
 
 $tidy->clear_messages;
-is( scalar $tidy->messages, 0, "Cleared the messages" );
+is( scalar $tidy->messages, 0, 'Cleared the messages' );
 
 __DATA__
 <html>

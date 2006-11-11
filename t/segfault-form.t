@@ -5,13 +5,13 @@ use warnings;
 use Test::More tests => 3;
 
 use HTML::Tidy;
-my $data = do { local $/; <DATA>; };
+my $html = do { local $/ = undef; <DATA>; };
 
 my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
-$tidy->clean( $data );
+$tidy->clean( $html );
 isa_ok( $tidy, 'HTML::Tidy' );
-pass( "Cleaned OK" );
+pass( 'Cleaned OK' );
 
 __DATA__
 <form action="http://www.alternation.net/cobra/index.pl">

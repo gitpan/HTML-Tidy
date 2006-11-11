@@ -1,21 +1,22 @@
 #!perl -Tw
 
+use warnings;
 use strict;
 use Test::More tests => 3;
 
 BEGIN { use_ok( 'HTML::Tidy' ); }
 
-my $html = do { local $/; <DATA> };
+my $html = join '', <DATA>;
 
 # No errors at all.
 
 my $tidy = new HTML::Tidy;
-isa_ok( $tidy, "HTML::Tidy" );
+isa_ok( $tidy, 'HTML::Tidy' );
 
-$tidy->parse( "-", $html );
+$tidy->parse( '-', $html );
 
 my @returned = map { $_->as_string } $tidy->messages;
-is( scalar @returned, 0, "Should have no messages" );
+is( scalar @returned, 0, 'Should have no messages' );
 # User reported a segfault when there are no messages.  By gum, he was
 # right.
 

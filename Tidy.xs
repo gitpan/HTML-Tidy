@@ -7,84 +7,195 @@
 #include <stdio.h>
 #include <errno.h>
 
+#define HTMLTIDY_LOAD_CONFIG_HASH(tdoc,tidy_options) {                     \
+    HE *entry;                                                             \
+    (void) hv_iterinit(tidy_options);                                      \
+    while ( entry = hv_iternext(tidy_options) ) {                          \
+        I32 key_len;                                                       \
+                                                                           \
+        TidyOptionId id;                                                   \
+                                                                           \
+        SV *sv_data;                                                       \
+        const char *data;                                                  \
+        STRLEN data_len;                                                   \
+                                                                           \
+        const char * const key = hv_iterkey(entry,&key_len);               \
+        const TidyOption opt = tidyGetOptionByName(tdoc,key);              \
+        if (!opt) {                                                        \
+            warn("HTML::Tidy: Unrecognized option: ``%s''\n",key);         \
+            continue;                                                      \
+        }                                                                  \
+                                                                           \
+        id = tidyOptGetId(opt);                                            \
+        sv_data = hv_iterval(tidy_options,entry);                          \
+        data = SvPV(sv_data,data_len);                                     \
+                                                                           \
+        if ( ! tidyOptSetValue(tdoc,id,data) ) {                           \
+            warn("HTML::Tidy: Can't set option: "                          \
+                 "``%s'' to ``%s''\n",                                     \
+                 key, data);                                               \
+        }                                                                  \
+    }                                                                      \
+}
+
+
 MODULE = HTML::Tidy         PACKAGE = HTML::Tidy
 
-SV *
-_tidy_messages(input)
+PROTOTYPES: ENABLE
+
+void
+_tidy_messages(input, configfile, tidy_options)
     INPUT:
         const char *input
-    CODE:
+        const char *configfile
+        HV *tidy_options
+    PREINIT:
         TidyBuffer errbuf = {0};
-        TidyDoc tdoc = tidyCreate();                   // Initialize "document"
+        TidyDoc tdoc = tidyCreate(); /* Initialize "document" */
+        const char* newline;
+        int rc = 0;
+    PPCODE:
+        rc = ( tidyOptSetValue( tdoc, TidyCharEncoding, "utf8" ) ? rc : -1 );
 
-        int rc;
-
-        rc = tidySetErrorBuffer( tdoc, &errbuf );      // Capture diagnostics
-        if ( rc >= 0 )
-            rc = tidyParseString( tdoc, input );       // Parse the input
+        if ( (rc >= 0 ) && configfile && *configfile ) {
+            rc = tidyLoadConfig( tdoc, configfile );
+        }
 
         if ( rc >= 0 ) {
-            const uint totalErrors = tidyErrorCount(tdoc) + tidyWarningCount(tdoc) + tidyAccessWarningCount(tdoc);
-            const char *str = totalErrors ? (const char *)errbuf.bp : "";
-            if ( str ) {
-                RETVAL = newSVpvn( str, strlen(str) );
+            HTMLTIDY_LOAD_CONFIG_HASH(tdoc,tidy_options);
+        }
+
+        if ( rc >= 0 ) {
+            /* Capture diagnostics */
+            rc = tidySetErrorBuffer( tdoc, &errbuf );
+        }
+
+        if ( rc >= 0 ) {
+            /* Parse the input */
+            rc = tidyParseString( tdoc, input );
+        }
+
+        if ( rc >= 0 && errbuf.bp) {
+            XPUSHs( sv_2mortal(newSVpvn(errbuf.bp, errbuf.size)) );
+
+            /* TODO: Make this a function */
+            switch ( tidyOptGetInt(tdoc,TidyNewline) ) {
+                case TidyLF:
+                    newline = "\n";
+                    break;
+                case TidyCR:
+                    newline = "\r";
+                    break;
+                default:
+                    newline = "\r\n";
+                    break;
             }
-            else {
-                RETVAL = &PL_sv_undef;
-            }
+            XPUSHs( sv_2mortal(newSVpv(newline, 0)) );
         }
         else {
-            XSRETURN_UNDEF;
+            rc = -1;
         }
 
         tidyBufFree( &errbuf );
         tidyRelease( tdoc );
 
-    OUTPUT:
-        RETVAL
+        if ( rc < 0 ) {
+            XSRETURN_UNDEF;
+        }
 
 
 void
-_tidy_clean(input, configfile)
+_tidy_clean(input, configfile, tidy_options)
     INPUT:
         const char *input
         const char *configfile
-    PPCODE:
+        HV *tidy_options
+    PREINIT:
         TidyBuffer errbuf = {0};
         TidyBuffer output = {0};
+        TidyDoc tdoc = tidyCreate(); /* Initialize "document" */
+        const char* newline;
+        int rc = 0;
+    PPCODE:
+        /* Set our default first. */
+        /* Don't word-wrap */
+        rc = ( tidyOptSetInt( tdoc, TidyWrapLen, 0 ) ? rc : -1 );
 
-        TidyDoc tdoc = tidyCreate();                // Initialize "document"
-        int rc;
-
-        if ( configfile && *configfile )
+        if ( (rc >= 0 ) && configfile && *configfile ) {
             rc = tidyLoadConfig( tdoc, configfile );
+        }
 
-        rc = tidyOptSetInt( tdoc, TidyWrapLen, 0 ); // Don't word-wrap
-        if ( rc >= 0 )
-          rc = tidySetErrorBuffer( tdoc, &errbuf );  // Capture diagnostics
-        if ( rc >= 0 )
-            rc = tidyParseString( tdoc, input );   // Parse the input
-        if ( rc >= 0 )
-            rc = tidyCleanAndRepair(tdoc);
-        if ( rc > 1 )
-            rc = tidyOptSetBool( tdoc, TidyForceOutput, yes ) ? rc : -1;
-        if ( rc >= 0)
-            rc = tidySaveBuffer( tdoc, &output );
-        if ( rc >= 0)
-            rc = tidyRunDiagnostics( tdoc );
+        /* XXX I think this cascade is a bug waiting to happen */
+
         if ( rc >= 0 ) {
-            const char *str = (const char *)output.bp;
-            if ( str )
-                XPUSHs( sv_2mortal(newSVpvn(str, strlen(str))) );
+            rc = ( tidyOptSetValue( tdoc, TidyCharEncoding, "utf8" ) ? rc : -1 );
+        }
 
-            if ( errbuf.bp )
-                XPUSHs( sv_2mortal(newSVpvn(errbuf.bp, strlen(errbuf.bp))) );
+        if ( rc >= 0 ) {
+            HTMLTIDY_LOAD_CONFIG_HASH(tdoc,tidy_options);
+        }
+
+        if ( rc >= 0 ) {
+            rc = tidySetErrorBuffer( tdoc, &errbuf );  // Capture diagnostics
+        }
+
+        if ( rc >= 0 ) {
+            rc = tidyParseString( tdoc, input );   // Parse the input
+        }
+
+        if ( rc >= 0 ) {
+            rc = tidyCleanAndRepair(tdoc);
+        }
+
+        if ( rc > 1 ) {
+            rc = ( tidyOptSetBool( tdoc, TidyForceOutput, yes ) ? rc : -1 );
+        }
+
+        if ( rc >= 0) {
+            rc = tidySaveBuffer( tdoc, &output );
+        }
+
+        if ( rc >= 0) {
+            rc = tidyRunDiagnostics( tdoc );
+        }
+
+        if ( rc >= 0 && output.bp && errbuf.bp ) {
+            XPUSHs( sv_2mortal(newSVpvn(output.bp, output.size)) );
+            XPUSHs( sv_2mortal(newSVpvn(errbuf.bp, errbuf.size)) );
+
+            /* TODO: Hoist this into a function */
+            switch ( tidyOptGetInt(tdoc,TidyNewline) ) {
+                case TidyLF:
+                    newline = "\n";
+                    break;
+                case TidyCR:
+                    newline = "\r";
+                    break;
+                default: 
+                    newline = "\r\n";
+                    break;
+            }
+            XPUSHs( sv_2mortal(newSVpv(newline, 0)) );
         }
         else {
-            XSRETURN_UNDEF;
+            rc = -1;
         }
 
         tidyBufFree( &output );
         tidyBufFree( &errbuf );
         tidyRelease( tdoc );
 
+        if ( rc < 0 ) {
+            XSRETURN_UNDEF;
+        }
+
+
+SV*
+_tidy_release_date()
+    PREINIT:
+        const char* version;
+    CODE:
+        version = tidyReleaseDate();
+        RETVAL = newSVpv(version,0); /* will be automatically "mortalized" */
+    OUTPUT:
+        RETVAL

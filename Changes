@@ -1,5 +1,13 @@
 Revision history for Perl extension HTML::Tidy.
 
+1.07_01 Fri Nov 10 22:12:59 CST 2006
+
+        We dumped a lot of work in here.  Suffice to say that it's
+        radically different.
+
+        [INTERNALS]
+        * Added support for Perl::Critic, and a "make critic" target.
+
 1.06    Fri Aug 19 10:23:29 CDT 2005
         NO FUNCTIONAL CHANGES.  Just a version bump and some doc fixes.
 

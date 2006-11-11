@@ -1,7 +1,10 @@
-# $Id: Message.pm 65 2004-02-25 06:22:56Z andy $
 package HTML::Tidy::Message;
 
+use warnings;
 use strict;
+use overload
+  q{""} => \&as_string,
+  fallback => 'sounds like a good idea';
 
 =head1 NAME
 
@@ -9,7 +12,7 @@ HTML::Tidy::Message - Message object for the Tidy functionality
 
 =head1 SYNOPSIS
 
-See L<HTML::Tidy> for all the gory details.
+See L<HTML::Tidy|HTML::Tidy> for all the gory details.
 
 =head1 EXPORTS
 
@@ -26,13 +29,13 @@ Create an object.  It's not very exciting.
 =cut
 
 sub new {
-    my $class = shift;
+    my $class  = shift;
 
-    my $file = shift;
-    my $type = shift;
-    my $line = shift || 0;
+    my $file   = shift;
+    my $type   = shift;
+    my $line   = shift || 0;
     my $column = shift || 0;
-    my $text = shift;
+    my $text   = shift;
 
     # Add an element that says what tag caused the error (B, TR, etc)
     # so that we can match 'em up down the road.
@@ -77,9 +80,9 @@ it's bad practice.
 sub where {
     my $self = shift;
 
-    return "-" unless $self->line && $self->column;
+    return '-' unless $self->line && $self->column;
 
-    return sprintf( "(%d:%d)", $self->line, $self->column );
+    return sprintf( '(%d:%d)', $self->line, $self->column );
 }
 
 =head2 as_string()
@@ -92,11 +95,12 @@ sub as_string {
     my $self = shift;
 
     my %strings = (
-        1 => "Warning",
-        2 => "Error",
+        1 => 'Warning',
+        2 => 'Error',
     );
 
-    return sprintf( "%s %s %s: %s", $self->file, $self->where, $strings{$self->type}, $self->text );
+    return sprintf( '%s %s %s: %s',
+        $self->file, $self->where, $strings{$self->type}, $self->text );
 }
 
 =head2 file()
