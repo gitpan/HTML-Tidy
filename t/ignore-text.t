@@ -4,7 +4,9 @@ use warnings;
 use strict;
 use Test::More tests => 3;
 
-BEGIN { use_ok( 'HTML::Tidy' ); }
+BEGIN {
+    use_ok( 'HTML::Tidy' );
+}
 
 my $html = do { local $/; <DATA> };
 

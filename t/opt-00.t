@@ -1,5 +1,5 @@
 #!perl -Tw
-# Testing: 
+
 use warnings;
 use strict;
 use Test::More;
@@ -10,7 +10,7 @@ BEGIN {
 }
 
 my $tidy = new HTML::Tidy({
-    tidy_mark => 0, 
+    tidy_mark => 0,
     add_xml_decl => 1,
     output_xhtml => 1,
     doctype => 'strict',
@@ -24,8 +24,8 @@ my $tidy = new HTML::Tidy({
     repeated_attributes => 'keep-first',
     break_before_br => 1,
     vertical_space => 1,
-    newline => "cr",
-    });
+    newline => 'cr',
+});
 
 my $input=<<'EOD';
 <h1>example</h1>

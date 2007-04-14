@@ -3,8 +3,8 @@ package HTML::Tidy::Message;
 use warnings;
 use strict;
 use overload
-  q{""} => \&as_string,
-  fallback => 'sounds like a good idea';
+    q{""} => \&as_string,
+    fallback => 'sounds like a good idea';
 
 =head1 NAME
 

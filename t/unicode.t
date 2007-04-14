@@ -6,14 +6,16 @@ use warnings;
 use strict;
 use Test::More tests => 7;
 
-BEGIN { use_ok( 'HTML::Tidy' ); }
+BEGIN {
+    use_ok( 'HTML::Tidy' );
+}
 
 my $args = { newline => 'Lf' };
 my $tidy = HTML::Tidy->new($args);
 
 # suck in the reference HTML document
-open(my $html_in, '<:utf8', 't/unicode.html') || 
-  die "Can't read unicode.html: $!";
+open( my $html_in, '<:utf8', 't/unicode.html' ) or
+    die "Can't read unicode.html: $!";
 my $html = do { local $/; <$html_in> };
 close $html_in;
 

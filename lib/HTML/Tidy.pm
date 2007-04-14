@@ -13,11 +13,11 @@ HTML::Tidy - (X)HTML validation in a Perl object
 
 =head1 VERSION
 
-Version 1.07_01
+Version 1.08
 
 =cut
 
-our $VERSION = '1.07_01';
+our $VERSION = '1.08';
 
 =head1 SYNOPSIS
 
@@ -85,9 +85,14 @@ sub new {
     my $class = shift;
     my $args = shift || {};
     my @unsupported_options = qw(
-    force-output   gnu-emacs-file  gnu-emacs
-    keep-time      quiet           slide-style
-    write-back); # XXX perhaps a list of supported options would be better
+        force-output
+        gnu-emacs-file
+        gnu-emacs
+        keep-time
+        quiet
+        slide-style
+        write-back
+    ); # REVIEW perhaps a list of supported options would be better
 
     my $self = bless {
         messages => [],
@@ -105,11 +110,11 @@ sub new {
 
         my $newkey = $key;
         $newkey =~ tr/_/-/;
-        
+
         if ( grep {$newkey eq $_} @unsupported_options ) {
-            croak("Unsupported option: ", $newkey);
+            croak( "Unsupported option: $newkey" );
         }
-        
+
         $self->{tidy_options}->{$newkey} = $args->{$key};
     }
 
@@ -214,7 +219,7 @@ sub parse {
     my $html = join( '', @_ );
 
     utf8::encode($html) unless utf8::is_utf8($html);
-    my ($errorblock,$newline) = _tidy_messages( $html, 
+    my ($errorblock,$newline) = _tidy_messages( $html,
                                                 $self->{config_file},
                                                 $self->{tidy_options}
                                               );
@@ -246,17 +251,17 @@ sub _parse_errors {
         }
         elsif ( $line =~ /^\d+ warnings?, \d+ errors? were found!/ ) {
             # Summary line we don't want
-	    
+
         }
         elsif ( $line eq 'No warnings or errors were found.' ) {
             # Summary line we don't want
 
         }
-        elsif ( $line eq 'This document has errors that must be fixed before' ){
+        elsif ( $line eq 'This document has errors that must be fixed before' ) {
             # Summary line we don't want
 
         }
-        elsif ( $line eq 'using HTML Tidy to generate a tidied up version.' ){
+        elsif ( $line eq 'using HTML Tidy to generate a tidied up version.' ) {
             # Summary line we don't want
 
         }
@@ -272,8 +277,8 @@ sub _parse_errors {
             Carp::carp "Unknown error type: $line";
             ++$parse_errors;
         }
-        push( @{$self->{messages}}, $message ) 
-	  if $message && $self->_is_keeper( $message );
+        push( @{$self->{messages}}, $message )
+            if $message && $self->_is_keeper( $message );
     } # for
     return $parse_errors;
 }
@@ -336,28 +341,29 @@ sub _is_keeper {
     # for example -> "1 September 2005"
     $version = HTML::Tidy->libtidy_version( { numeric => 1 } );
     # for example -> 20050901
-    
+
 Returns the version of the underling tidy library.
 
 =cut
 
-sub libtidy_version { ## no critic (RequireTrailingCommas)
+sub libtidy_version {
     my $self = shift;
     my $args = shift || {};
-    
+
     my $version_str = _tidy_release_date();
-    
+
     return $version_str unless $args->{numeric};
-    
+
     my @version = split(/\s+/,$version_str);
-    
-    my %months = ( 
-       January =>  1,  February =>  2,  March => 3,
-       April   =>  4,  May      =>  5,  June => 6,
-       July    =>  7,  August   =>  8,  September => 9,
-       October => 10,  November => 11,  December => 12);
+
+    my %months = (
+        January =>  1,  February =>  2,  March => 3,
+        April   =>  4,  May      =>  5,  June => 6,
+        July    =>  7,  August   =>  8,  September => 9,
+        October => 10,  November => 11,  December => 12,
+    );
     my $month = $months{$version[1]};
-    
+
     return  10_000 * $version[2]
            +   100 * $month
            +         $version[0];
@@ -452,7 +458,7 @@ Andy Lester, C<< <andy at petdance.com> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (C) 2005-2006 by Andy Lester
+Copyright (C) 2005-2007 by Andy Lester
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.1 or,

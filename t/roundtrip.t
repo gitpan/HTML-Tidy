@@ -4,7 +4,9 @@ use warnings;
 use strict;
 use Test::More tests => 4;
 
-BEGIN { use_ok( 'HTML::Tidy' ); }
+BEGIN {
+    use_ok( 'HTML::Tidy' );
+}
 
 my $args = { newline => 'Lf' };
 my $tidy = HTML::Tidy->new($args);
