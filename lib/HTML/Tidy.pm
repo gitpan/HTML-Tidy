@@ -1,6 +1,6 @@
 package HTML::Tidy;
 
-use 5.006001;
+use 5.008;
 use strict;
 use warnings;
 use Carp ();
@@ -13,18 +13,18 @@ HTML::Tidy - (X)HTML validation in a Perl object
 
 =head1 VERSION
 
-Version 1.08
+Version 1.50
 
 =cut
 
-our $VERSION = '1.08';
+our $VERSION = '1.50';
 
 =head1 SYNOPSIS
 
     use HTML::Tidy;
 
     my $tidy = HTML::Tidy->new( {config_file => 'path/to/config'} );
-    $tidy->ignore( type => TIDY_WARNING );
+    $tidy->ignore( type => TIDY_WARNING, typed => TIDY_INFO );
     $tidy->parse( "foo.html", $contents_of_foo );
 
     for my $message ( $tidy->messages ) {
@@ -39,7 +39,7 @@ user looking to migrate, see the section L</Converting from HTML::Lint>.
 
 =head1 EXPORTS
 
-Message types C<TIDY_WARNING> and C<TIDY_ERROR>.
+Message types C<TIDY_ERROR>, C<TIDY_WARNING> and C<TIDY_INFO>.
 
 Everything else is an object method.
 
@@ -47,10 +47,11 @@ Everything else is an object method.
 
 use base 'Exporter';
 
-use constant TIDY_ERROR   => 2;
-use constant TIDY_WARNING => 1;
+use constant TIDY_ERROR   => 3;
+use constant TIDY_WARNING => 2;
+use constant TIDY_INFO    => 1;
 
-our @EXPORT = qw( TIDY_ERROR TIDY_WARNING );
+our @EXPORT = qw( TIDY_ERROR TIDY_WARNING TIDY_INFO );
 
 =head1 METHODS
 
@@ -95,10 +96,10 @@ sub new {
     ); # REVIEW perhaps a list of supported options would be better
 
     my $self = bless {
-        messages => [],
-        ignore_type => [],
-        ignore_text => [],
-        config_file => '',
+        messages     => [],
+        ignore_type  => [],
+        ignore_text  => [],
+        config_file  => '',
         tidy_options => {},
     }, $class;
 
@@ -157,11 +158,11 @@ as necessary to set up all your restrictions; the options will stack up.
 
 =over 4
 
-=item * type => TIDY_(WARNING|ERROR)
+=item * type => TIDY_INFO|TIDY_WARNING|TIDY_ERROR
 
-Specifies the type of messages you want to ignore, either warnings
-or errors.  If you wanted, you could call ignore on both and get no
-messages at all.
+Specifies the type of messages you want to ignore, either info or warnings
+or errors.  If you wanted, you could call ignore on all three and get
+no messages at all.
 
     $tidy->ignore( type => TIDY_WARNING );
 
@@ -243,11 +244,20 @@ sub _parse_errors {
         chomp $line;
 
         my $message;
-        if ( $line =~ /^line (\d+) column (\d+) - (Warning|Error): (.+)$/ ) {
+        if ( $line =~ /^line (\d+) column (\d+) - (Warning|Error|Info): (.+)$/ ) {
             my ($line, $col, $type, $text) = ($1, $2, $3, $4);
-            $type = ($type eq 'Warning') ? TIDY_WARNING : TIDY_ERROR;
+            $type =
+                ($type eq 'Warning') ? TIDY_WARNING :
+                ($type eq 'Info')    ? TIDY_INFO :
+                                       TIDY_ERROR;
             $message = HTML::Tidy::Message->new( $filename, $type, $line, $col, $text );
 
+        }
+        elsif ( $line =~ m/^Info: (.+)$/  ) {
+            # Info line we don't want
+
+            my $text = $1;
+            $message = HTML::Tidy::Message->new( $filename, TIDY_INFO, undef, undef, $text );
         }
         elsif ( $line =~ /^\d+ warnings?, \d+ errors? were found!/ ) {
             # Summary line we don't want
@@ -265,16 +275,12 @@ sub _parse_errors {
             # Summary line we don't want
 
         }
-        elsif ( $line =~ m/^Info:/  ) {
-            # Info line we don't want
-
-        }
         elsif ( $line =~ m/^\s*$/  ) {
             # Blank line we don't want
 
         }
         else {
-            Carp::carp "Unknown error type: $line";
+            Carp::carp "HTML::Tidy: Unknown error type: $line";
             ++$parse_errors;
         }
         push( @{$self->{messages}}, $message )
@@ -322,14 +328,12 @@ sub _is_keeper {
 
     my @ignore_types = @{$self->{ignore_type}};
     if ( @ignore_types ) {
-        my $type = $message->type;
-        return if grep { $type == $_ } @ignore_types;
+        return if grep { $message->type == $_ } @ignore_types;
     }
 
     my @ignore_texts = @{$self->{ignore_text}};
     if ( @ignore_texts ) {
-        my $text = $message->text;
-        return if grep { $text =~ $_ } @ignore_texts;
+        return if grep { $message->text =~ $_ } @ignore_texts;
     }
 
     return 1;
@@ -337,36 +341,14 @@ sub _is_keeper {
 
 =head2 libtidy_version()
 
-    $version = HTML::Tidy->libtidy_version();
-    # for example -> "1 September 2005"
-    $version = HTML::Tidy->libtidy_version( { numeric => 1 } );
-    # for example -> 20050901
-
 Returns the version of the underling tidy library.
 
 =cut
 
 sub libtidy_version {
-    my $self = shift;
-    my $args = shift || {};
+    my $version_str = _tidy_version();
 
-    my $version_str = _tidy_release_date();
-
-    return $version_str unless $args->{numeric};
-
-    my @version = split(/\s+/,$version_str);
-
-    my %months = (
-        January =>  1,  February =>  2,  March => 3,
-        April   =>  4,  May      =>  5,  June => 6,
-        July    =>  7,  August   =>  8,  September => 9,
-        October => 10,  November => 11,  December => 12,
-    );
-    my $month = $months{$version[1]};
-
-    return  10_000 * $version[2]
-           +   100 * $month
-           +         $version[0];
+    return $version_str;
 }
 
 require XSLoader;
@@ -391,8 +373,7 @@ L<HTML::Tidy|HTML::Tidy> is different from L<HTML::Lint|HTML::Lint> in a number 
 
 =item * It's not pure Perl
 
-C<HTML::Tidy> is mostly a happy wrapper around libtidy.  Tidy's home
-page is at L<http://tidy.sourceforge.net>.
+C<HTML::Tidy> is mostly a happy wrapper around libtidy.
 
 =item * The real work is done by someone else
 
@@ -410,11 +391,12 @@ prerequisite modules.
 
 =head1 BUGS & FEEDBACK
 
-Please report any bugs or feature requests to
-C<bug-html-tidy at rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=HTML-Tidy>.
-I will be notified, and then you'll automatically be notified of progress on
-your bug as I make changes.
+Please report any bugs or feature requests at the issue tracker on github
+L<http://github.com/petdance/html-tidy/issues>.  I will be notified,
+and then you'll automatically be notified of progress on your bug as I
+make changes.
+
+Please do NOT use L<http://rt.cpan.org>.
 
 =head1 SUPPORT
 
@@ -434,9 +416,9 @@ L<http://annocpan.org/dist/HTML-Tidy>
 
 L<http://cpanratings.perl.org/d/HTML-Tidy>
 
-=item * RT: CPAN's request tracker
+=item * HTML::Tidy's issue queue at github
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-Tidy>
+L<http://github.com/petdance/html-tidy/issues>
 
 =item * Search CPAN
 
@@ -444,7 +426,7 @@ L<http://search.cpan.org/dist/HTML-Tidy>
 
 =item * Subversion source code repository
 
-L<http://code.google.com/p/html-tidy/source>
+L<http://github.com/petdance/html-tidy>
 
 =back
 
@@ -458,7 +440,7 @@ Andy Lester, C<< <andy at petdance.com> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (C) 2005-2007 by Andy Lester
+Copyright (C) 2005-2010 by Andy Lester
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.1 or,

@@ -10,3 +10,7 @@ BEGIN {
 BEGIN {
     use_ok( 'HTML::Tidy::Message' );
 }
+eval {
+    # For better test reporting
+    diag( "Testing HTML::Tidy $HTML::Tidy::VERSION, Perl $]; tidylib " . HTML::Tidy->libtidy_version());
+}
