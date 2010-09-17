@@ -1,10 +1,10 @@
 --- #YAML:1.0
 name:               HTML-Tidy
-version:            1.52
+version:            1.54
 abstract:           (X)HTML validation in a Perl object
 author:
     - Andy Lester <andy@petdance.com>
-license:            unknown
+license:            artistic_2
 distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
@@ -15,8 +15,14 @@ requires:
     constant:       0
     Exporter:       0
     overload:       0
+    perl:           5.008
     Test::Builder:  0
     Test::More:     0
+resources:
+    bugtracker:  http://github.com/petdance/html-tidy/issues
+    homepage:    http://github.com/petdance/html-tidy
+    license:     http://www.opensource.org/licenses/artistic-license-2.0.php
+    Repository:  http://github.com/petdance/html-tidy
 no_index:
     directory:
         - t

@@ -13,11 +13,11 @@ HTML::Tidy - (X)HTML validation in a Perl object
 
 =head1 VERSION
 
-Version 1.52
+Version 1.54
 
 =cut
 
-our $VERSION = '1.52';
+our $VERSION = '1.54';
 
 =head1 SYNOPSIS
 
@@ -67,14 +67,14 @@ Optionally you can give a hashref of configuration parms.
 
 This configuration file will be read and used when you clean or parse an HTML file.
 
-You can also pass options directly to libtidyp.
+You can also pass options directly to tidyp.
 
     my $tidy = HTML::Tidy->new( {
                                     output_xhtml => 1,
                                     tidy_mark => 0,
                                 } );
 
-See C<tidyp -help-config> for the list of options supported by libtidyp.
+See C<tidyp -help-config> for the list of options supported by tidyp.
 
 The following options are not supported by C<HTML::Tidy>:
 
@@ -117,7 +117,7 @@ sub new {
         $newkey =~ tr/_/-/;
 
         if ( grep {$newkey eq $_} @unsupported_options ) {
-            croak( "Unsupported option: $newkey" );
+            Carp::croak( "Unsupported option: $newkey" );
         }
 
         $self->{tidy_options}->{$newkey} = $args->{$key};
@@ -219,7 +219,7 @@ sub parse {
     my $self = shift;
     my $filename = shift;
     if (@_ == 0) {
-        croak('Usage: parser($filename,$str [, $str...])') ## no critic
+        Carp::croak('Usage: parser($filename,$str [, $str...])') ## no critic
     }
     my $html = join( '', @_ );
 
@@ -304,7 +304,7 @@ Returns the cleaned string as a single string.
 sub clean {
     my $self = shift;
     if (@_ == 0) {
-        croak('Usage: clean($str [, $str...])') ## no critic
+        Carp::croak('Usage: clean($str [, $str...])') ## no critic
     }
     my $text = join( '', @_ );
 
@@ -343,13 +343,18 @@ sub _is_keeper {
     return 1;
 }
 
+=head2 tidyp_version()
+
 =head2 libtidyp_version()
 
-Returns the version of the underling tidy library.
+Returns the version of the underling tidyp library.
 
 =cut
 
-sub libtidyp_version {
+# backcompat
+sub libtidyp_version { shift->tidyp_version }
+
+sub tidyp_version {
     my $version_str = _tidyp_version();
 
     return $version_str;
@@ -362,12 +367,12 @@ XSLoader::load('HTML::Tidy', $VERSION);
 
 __END__
 
-=head1 INSTALLING LIBTIDYP
+=head1 INSTALLING TIDYP
 
-L<HTML::Tidy|HTML::Tidy> requires that C<libtidyp> be installed on your system.
-You can obtain libtidyp through your distribution's package manager
+L<HTML::Tidy|HTML::Tidy> requires that C<tidyp> be installed on your system.
+You can obtain tidyp through your distribution's package manager
 (make sure you install the development package with headers), or from
-the libtidyp website at L<http://github.com/petdance/libtidyp>.
+the tidyp Git repository at L<http://github.com/petdance/tidyp>.
 
 =head1 CONVERTING FROM C<HTML::Lint>
 
@@ -377,11 +382,11 @@ L<HTML::Tidy|HTML::Tidy> is different from L<HTML::Lint|HTML::Lint> in a number 
 
 =item * It's not pure Perl
 
-C<HTML::Tidy> is mostly a happy wrapper around libtidyp.
+C<HTML::Tidy> is mostly a happy wrapper around tidyp.
 
 =item * The real work is done by someone else
 
-Changes to libtidyp may come down the pipe that I don't have control over.
+Changes to tidyp may come down the pipe that I don't have control over.
 That's the price we pay for having it do a darn good job.
 
 =item * It's no longer bundled with its C<Test::> counterpart
@@ -412,6 +417,10 @@ You can also look for information at:
 
 =over 4
 
+=item * HTML::Tidy's issue queue at github
+
+L<http://github.com/petdance/html-tidy/issues>
+
 =item * AnnoCPAN: Annotated CPAN documentation
 
 L<http://annocpan.org/dist/HTML-Tidy>
@@ -420,15 +429,11 @@ L<http://annocpan.org/dist/HTML-Tidy>
 
 L<http://cpanratings.perl.org/d/HTML-Tidy>
 
-=item * HTML::Tidy's issue queue at github
-
-L<http://github.com/petdance/html-tidy/issues>
-
-=item * Search CPAN
+=item * search.cpan.org
 
 L<http://search.cpan.org/dist/HTML-Tidy>
 
-=item * Subversion source code repository
+=item * Git source code repository
 
 L<http://github.com/petdance/html-tidy>
 
@@ -446,8 +451,7 @@ Andy Lester, C<< <andy at petdance.com> >>
 
 Copyright (C) 2005-2010 by Andy Lester
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.1 or,
-at your option, any later version of Perl 5 you may have available.
+This library is free software.  You mean modify or distribute it under
+the Artistic License v2.0.
 
 =cut
