@@ -9,17 +9,17 @@ use HTML::Tidy;
 my $help;
 my $context;
 
-my $tidy = new HTML::Tidy;
+my $tidy = HTML::Tidy->new;
 
 GetOptions(
-    'help'          => \$help,
+    'help|version'  => \$help,
     'context:i'     => \$context,
     'noerrors'      => sub { $tidy->ignore( type => [ TIDY_ERROR ] ) },
     'nowarnings'    => sub { $tidy->ignore( type => [ TIDY_WARNING ] ) },
 ) or $help = 1;
 
 if ( !@ARGV || $help ) {
-    print "webtidy v$HTML::Tidy::VERSION\n";
+    print "webtidy v$HTML::Tidy::VERSION using tidyp v" . HTML::Tidy::tidyp_version() . "\n";
     print <DATA>;
     exit 1;
 }
@@ -28,8 +28,7 @@ if ( !@ARGV || $help ) {
 for my $url ( @ARGV ) {
     my @lines;
     if ( $url =~ /^https?:/ ) {
-        eval { require LWP::Simple };
-        if ( $@ ) {
+        if ( !eval { require LWP::Simple; 1; } ) {
             warn q{Can't retrieve URLs without LWP::Simple installed};
             next;
         }
@@ -77,3 +76,6 @@ Usage: webtidy [filename or url]... (filename - reads STDIN)
     --nowarnings    Ignore warnings
 
     --help          This message
+
+webtidy is free software.  You may modify or distribute it under the
+terms of the Artistic License v2.0.

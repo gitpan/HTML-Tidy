@@ -1,12 +1,11 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
+
 use Test::More tests => 3;
 
-BEGIN {
-    use_ok( 'HTML::Tidy' );
-}
+use HTML::Tidy;
 
 my $html = do { local $/; <DATA> };
 
@@ -19,10 +18,11 @@ DATA (9:1) Error: <y> is not recognized!
 chomp @expected_messages;
 shift @expected_messages; # First one's blank
 
-my $tidy = new HTML::Tidy({config_file => 't/cfg-for-parse.cfg' });
+my $tidy = HTML::Tidy->new( { config_file => 't/cfg-for-parse.cfg' } );
 isa_ok( $tidy, 'HTML::Tidy' );
 
-$tidy->parse( 'DATA', $html );
+my $rc = $tidy->parse( 'DATA', $html );
+ok( $rc, 'Parsed OK' );
 
 my @returned = map { $_->as_string } $tidy->messages;
 s/[\r\n]+\z// for @returned;

@@ -1,12 +1,11 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
+
 use Test::More tests => 3;
 
-BEGIN {
-    use_ok( 'HTML::Tidy' );
-}
+use HTML::Tidy;
 
 my $html = join '', <DATA>;
 
@@ -17,10 +16,11 @@ my @expected = split /\n/, q{
 chomp @expected;
 shift @expected; # First one's blank
 
-my $tidy = new HTML::Tidy;
+my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 $tidy->ignore( type => TIDY_INFO );
-$tidy->parse( '-', $html );
+my $rc = $tidy->parse( '-', $html );
+ok( $rc, 'Parsed OK' );
 
 my @returned = map { $_->as_string } $tidy->messages;
 s/[\r\n]+\z// for @returned;

@@ -26,6 +26,7 @@ t/simple.t
 t/too-many-titles.t
 t/unicode.html
 t/unicode.t
+t/unicode-nbsp.t
 t/venus.cfg
 t/venus.html
 t/venus.t
@@ -33,4 +34,5 @@ t/version.t
 t/wordwrap.cfg
 t/wordwrap.t
 Tidy.xs
-META.yml                                 Module meta-data (added by MakeMaker)
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

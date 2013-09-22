@@ -1,10 +1,11 @@
-#!perl -Tw
+#!perl -T
 
 use strict;
 use warnings;
-use Test::More tests => 7;
 
-BEGIN { use_ok( 'HTML::Tidy' ); }
+use Test::More tests => 9;
+
+use HTML::Tidy;
 
 my $html = do { local $/ = undef; <DATA> };
 
@@ -24,11 +25,12 @@ chomp @expected_errors;
 shift @expected_errors; # First one's blank
 
 WARNINGS_ONLY: {
-    my $tidy = new HTML::Tidy;
+    my $tidy = HTML::Tidy->new;
     isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( type => TIDY_ERROR );
-    $tidy->parse( '-', $html );
+    my $rc = $tidy->parse( '-', $html );
+    ok( $rc, 'Parsed OK' );
 
     my @returned = map { $_->as_string } $tidy->messages;
     s/[\r\n]+\z// for @returned;
@@ -37,11 +39,12 @@ WARNINGS_ONLY: {
 }
 
 ERRORS_ONLY: {
-    my $tidy = new HTML::Tidy;
+    my $tidy = HTML::Tidy->new;
     isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( type => TIDY_WARNING );
-    $tidy->parse( '-', $html );
+    my $rc = $tidy->parse( '-', $html );
+    ok( $rc, 'Parsed OK' );
 
     my @returned = map { $_->as_string } $tidy->messages;
     s/[\r\n]+\z// for @returned;
@@ -49,20 +52,22 @@ ERRORS_ONLY: {
 }
 
 DIES_ON_ERROR: {
-    my $tidy = new HTML::Tidy;
+    my $tidy = HTML::Tidy->new;
     isa_ok( $tidy, 'HTML::Tidy' );
 
-    eval { $tidy->ignore( blongo => TIDY_WARNING ) };
+    my $rc = eval { $tidy->ignore( blongo => TIDY_WARNING ) };
+    ok( !$rc, 'eval should fail' );
     like( $@, qr/^Invalid ignore type.+blongo/, 'Throws an error' );
 }
 
 sub munge_returned {
     # non-1 line numbers are not reliable across libtidies
     my $returned = shift;
-    my $start_line = shift || qq{-}; 
-    for ( my $i = 0; $i < scalar @{$returned}; $i++ ) {
-        next if $returned->[$i] =~ m/$start_line \(\d+:1\)/;
-        $returned->[$i] =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
+    my $start_line = shift || '-';
+
+    for my $line ( @{$returned} ) {
+        next if $line =~ /$start_line \(\d+:1\)/;
+        $line =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
     }
 }
 __DATA__

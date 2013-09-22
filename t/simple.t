@@ -1,13 +1,11 @@
-#!perl -w
+#!perl -T
 
 use warnings;
 use strict;
 
 use Test::More tests => 4;
 
-BEGIN {
-    use_ok( 'HTML::Tidy' );
-}
+use HTML::Tidy;
 
 my $html = join '', <DATA>;
 
@@ -15,13 +13,14 @@ my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 
 $tidy->ignore( type => TIDY_INFO );
-$tidy->parse( '-', $html );
+my $rc = $tidy->parse( '-', $html );
+ok( $rc, 'Parsed OK' );
 
 my @messages = $tidy->messages;
 is( scalar @messages, 5, 'Right number of initial messages' );
 
 $tidy->clear_messages;
-is( scalar $tidy->messages, 0, 'Cleared the messages' );
+is_deeply( [$tidy->messages], [], 'Cleared the messages' );
 
 __DATA__
 <html>

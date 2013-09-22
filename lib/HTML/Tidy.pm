@@ -13,18 +13,18 @@ HTML::Tidy - (X)HTML validation in a Perl object
 
 =head1 VERSION
 
-Version 1.54
+Version 1.56
 
 =cut
 
-our $VERSION = '1.54';
+our $VERSION = '1.56';
 
 =head1 SYNOPSIS
 
     use HTML::Tidy;
 
     my $tidy = HTML::Tidy->new( {config_file => 'path/to/config'} );
-    $tidy->ignore( type => TIDY_WARNING, typed => TIDY_INFO );
+    $tidy->ignore( type => TIDY_WARNING, type => TIDY_INFO );
     $tidy->parse( "foo.html", $contents_of_foo );
 
     for my $message ( $tidy->messages ) {
@@ -223,14 +223,12 @@ sub parse {
     }
     my $html = join( '', @_ );
 
-    utf8::encode($html) unless utf8::is_utf8($html);
-    my ($errorblock,$newline) = _tidy_messages( $html,
-                                                $self->{config_file},
-                                                $self->{tidy_options}
-                                              );
+    utf8::encode($html) if utf8::is_utf8($html);
+    my ($errorblock,$newline) = _tidy_messages( $html, $self->{config_file}, $self->{tidy_options} );
+    return 1 unless defined $errorblock;
+
     utf8::decode($errorblock);
 
-    return unless defined $errorblock;
     return !$self->_parse_errors($filename, $errorblock, $newline);
 }
 
@@ -308,7 +306,7 @@ sub clean {
     }
     my $text = join( '', @_ );
 
-    utf8::encode($text) unless utf8::is_utf8($text);
+    utf8::encode($text) if utf8::is_utf8($text);
     if ( defined $text ) {
         $text .= "\n";
     }
@@ -352,7 +350,7 @@ Returns the version of the underling tidyp library.
 =cut
 
 # backcompat
-sub libtidyp_version { shift->tidyp_version }
+sub libtidyp_version { return shift->tidyp_version }
 
 sub tidyp_version {
     my $version_str = _tidyp_version();
@@ -369,14 +367,14 @@ __END__
 
 =head1 INSTALLING TIDYP
 
-L<HTML::Tidy|HTML::Tidy> requires that C<tidyp> be installed on your system.
+C<HTML::Tidy> requires that C<tidyp> be installed on your system.
 You can obtain tidyp through your distribution's package manager
 (make sure you install the development package with headers), or from
 the tidyp Git repository at L<http://github.com/petdance/tidyp>.
 
 =head1 CONVERTING FROM C<HTML::Lint>
 
-L<HTML::Tidy|HTML::Tidy> is different from L<HTML::Lint|HTML::Lint> in a number of crucial ways.
+C<HTML::Tidy> is different from C<HTML::Lint> in a number of crucial ways.
 
 =over 4
 
@@ -449,7 +447,7 @@ Andy Lester, C<< <andy at petdance.com> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (C) 2005-2010 by Andy Lester
+Copyright (C) 2005-2013 by Andy Lester
 
 This library is free software.  You mean modify or distribute it under
 the Artistic License v2.0.

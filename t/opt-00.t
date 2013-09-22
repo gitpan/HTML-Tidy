@@ -1,15 +1,13 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
-use Test::More;
 
-BEGIN {
-    plan tests => 2;
-    use_ok( 'HTML::Tidy' );
-}
+use Test::More tests => 1;
 
-my $tidy = new HTML::Tidy({
+use HTML::Tidy;
+
+my $tidy = HTML::Tidy->new({
     tidy_mark           => 0,
     add_xml_decl        => 1,
     output_xhtml        => 1,

@@ -1,16 +1,16 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
+
 use Test::More tests => 3;
 
-BEGIN {
-    use_ok( 'HTML::Tidy' );
-}
+use HTML::Tidy;
 
-my $tidy = new HTML::Tidy;
+my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
-$tidy->parse( '-', <DATA> );
+my $rc = $tidy->parse( '-', <DATA> );
+ok( $rc, 'Parsed OK' );
 
 my @expected = split /\n/, q{
 - (1:1) Warning: missing <!DOCTYPE> declaration
@@ -30,11 +30,14 @@ is_deeply( \@messages, \@expected, 'Matching messages' );
 sub munge_returned {
     # non-1 line numbers are not reliable across libtidies
     my $returned = shift;
-    my $start_line = shift || qq{-};
-    for ( my $i = 0; $i < scalar @{$returned}; $i++ ) {
-        next if $returned->[$i] =~ m/$start_line \(\d+:1\)/;
-        $returned->[$i] =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
+    my $start_line = shift || '-';
+
+    for my $line ( @{$returned} ) {
+        next if $line =~ /$start_line \(\d+:1\)/;
+        $line =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
     }
+
+    return;
 }
 
 __DATA__

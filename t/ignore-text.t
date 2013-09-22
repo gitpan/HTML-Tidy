@@ -1,12 +1,11 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
+
 use Test::More tests => 3;
 
-BEGIN {
-    use_ok( 'HTML::Tidy' );
-}
+use HTML::Tidy;
 
 my $html = do { local $/; <DATA> };
 
@@ -19,13 +18,14 @@ chomp @expected_messages;
 shift @expected_messages; # First one's blank
 
 IGNORE_BOGOTAG: {
-    my $tidy = new HTML::Tidy;
+    my $tidy = HTML::Tidy->new;
     isa_ok( $tidy, 'HTML::Tidy' );
 
     $tidy->ignore( text => qr/bogotag/ );
     $tidy->ignore( text => [ qr/UNESCAPED/, qr/doctype/i ] );
     # The qr/UNESCAPED/ should not ignore anything because there's no /i
-    $tidy->parse( 'DATA', $html );
+    my $rc = $tidy->parse( 'DATA', $html );
+    ok( $rc, 'Parsed OK' );
 
     my @returned = map { $_->as_string } $tidy->messages;
     munge_returned( \@returned, 'DATA' );
@@ -36,10 +36,11 @@ IGNORE_BOGOTAG: {
 sub munge_returned {
     # non-1 line numbers are not reliable across libtidies
     my $returned = shift;
-    my $start_line = shift || qq{-};
-    for ( my $i = 0; $i < scalar @{$returned}; $i++ ) {
-        next if $returned->[$i] =~ m/$start_line \(\d+:1\)/;
-        $returned->[$i] =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
+    my $start_line = shift || '-';
+
+    for my $line ( @{$returned} ) {
+        next if $line =~ m/$start_line \(\d+:1\)/;
+        $line =~ s/$start_line \((\d+):(\d+)\)/$start_line ($1:XX)/;
     }
 }
 __DATA__

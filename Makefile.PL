@@ -31,15 +31,13 @@ else {
 It seems that you don't have tidyp installed.  HTML::Tidy does no
 real work on its own.  It's just a wrapper aound tidyp.
 
-HTML::Tidy is only tested to work with tidyp hosted at
-http://github.com/petdance/tidyp.  This is mostly the same as the one
-at http://tidy.sourceforge.net/, with some changes, such as adding a
-version number so that we can tell what version we're working with.
+Please read the README.markdown file for details on how to install.
 
-If you do have tidyp installed, and I just haven't detected it,
+If you do have tidyp installed, but Makefile.PL can't detect it,
 go ahead and try building.  If HTML::Tidy builds and tests correctly,
-then please let Andy Lester know at andy@petdance.com so that he can
-fix the library detection code.
+please file a ticket at Github at
+http://github.com/petdance/html-tidy/issues.  so we can fix the
+library detection code.
 
 EOF
     }
@@ -63,7 +61,7 @@ my $parms = {
     ABSTRACT_FROM       => 'lib/HTML/Tidy.pm',
     PREREQ_PM           => {
         'Exporter'      => 0,
-        'Test::More'    => 0,
+        'Test::More'    => '0.98', # For subtest()
         'Test::Builder' => 0,
         'Carp'          => 0,
         'overload'      => 0,
@@ -85,10 +83,10 @@ if ( $ExtUtils::MakeMaker::VERSION ge '6.45_01' ) {
             license     => 'http://www.opensource.org/licenses/artistic-license-2.0.php',
             homepage    => 'http://github.com/petdance/html-tidy',
             bugtracker  => 'http://github.com/petdance/html-tidy/issues',
-            Repository  => 'http://github.com/petdance/html-tidy',
+            repository  => 'http://github.com/petdance/html-tidy',
         }
     };
-    $parms->{LICENSE} = 'artistic_2',
+    $parms->{LICENSE} = 'artistic_2';
 }
 if ( $ExtUtils::MakeMaker::VERSION ge '6.47_02' ) {
     $parms->{MIN_PERL_VERSION} = 5.008;

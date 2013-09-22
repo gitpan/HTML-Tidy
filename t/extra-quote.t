@@ -1,4 +1,4 @@
-#!perl -Tw
+#!perl -T
 
 use warnings;
 use strict;
@@ -8,7 +8,7 @@ use strict;
 
 use Test::More tests => 4;
 
-BEGIN { use_ok( 'HTML::Tidy' ); }
+use HTML::Tidy;
 
 my $html = do { local $/ = undef; <DATA> };
 
@@ -16,7 +16,8 @@ my $tidy = HTML::Tidy->new;
 isa_ok( $tidy, 'HTML::Tidy' );
 
 $tidy->ignore( text => qr/DOCTYPE/ );
-$tidy->parse( '-', $html );
+my $rc = $tidy->parse( '-', $html );
+ok( $rc, 'Parsed OK' );
 
 my @expected = split /\n/, q{
 - (4:1) Warning: <img> unexpected or duplicate quote mark
